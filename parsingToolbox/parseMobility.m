@@ -56,6 +56,14 @@ function [ vehicleStruct, pedestrianStruct ] = parseMobility( sumo, vehicle, ped
     vehicleStruct.missingIDs = missingIDs;
     vehicleStruct.type = unique(vehicle(:,5),'stable');
     
+    %Last vNode may have only one element for time, x and y, which will cause an error when calling printAnimate
+    if length(vehicleStruct.vehNode(end).time) <= 1
+        vehicleStruct.vehNode(end).time = [vehicleStruct.vehNode(end).time - 1, vehicleStruct.vehNode(end).time];
+        vehicleStruct.vehNode(end).x = [vehicleStruct.vehNode(end).x, vehicleStruct.vehNode(end).x];
+        vehicleStruct.vehNode(end).y = [vehicleStruct.vehNode(end).y, vehicleStruct.vehNode(end).y];    
+    end
+    
+    
     if isempty(pedestrian)
         pedestrianStruct = struct;
         return
