@@ -31,7 +31,7 @@ function potentialPos = sumoFemtoPositions(outputMap, BS, map, ratName)
     tree = repmat(ceil(length(junctionIDs)/SIMULATOR.parallelWorkers),[1 SIMULATOR.parallelWorkers-1]);
     treeFinal = length(junctionIDs) - tree(1)*(SIMULATOR.parallelWorkers-1);
     tree = [ tree treeFinal ];
-
+    
     % Get an array of all the junction shapes.
     for i = 1:length(junctionIDs)
         shape{i} = traci.junction.getShape(junctionIDs{i});
@@ -39,7 +39,9 @@ function potentialPos = sumoFemtoPositions(outputMap, BS, map, ratName)
     
     % Run in parallel based on the number of workers to speed up the
     % execution time.
-    parfor (i = 1:SIMULATOR.parallelWorkers,SIMULATOR.parallelWorkers)
+    parfor (i = 1:SIMULATOR.parallelWorkers, SIMULATOR.parallelWorkers)
+        size(junctionIDs);
+        size(tree);
         warning('off', 'MATLAB:polyshape:boundary3Points')
         WaitMessage.Send;
         if i == 1
