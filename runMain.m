@@ -60,6 +60,9 @@ function runMain( map, sumo, BS, linkBudget )
         [ vehicles, pedestrians ] = runSUMO(sumo,map,BS,outputMap,potentialBSPos,chosenRSUpos, tilesCovered,distancePerRAT,sortedIndexesPerRat,losNlosStatusPerRAT,initialRssAll, distanceBuildings, sortedIndexesBuildings, rssBuildings);
     elseif strcmp(SIMULATOR.scenario,'v2v')
         [ vehicles, pedestrians ] = runV2V(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
+    elseif strcmp(SIMULATOR.scenario, 'matching')
+        [ vehicles, pedestrians ] = runMatching(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
+    
     else
         fprintf('Wrong scenario name. Please check the chosen scenario in simSettings.m file.\n')
         error('Wrong chosen scenario.');
@@ -67,7 +70,11 @@ function runMain( map, sumo, BS, linkBudget )
     
     [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
     
-    printAnimate(sumo,vehiclesStruct,pedestriansStruct,outputMap)
+    if strcmp(SIMULATOR.scenario, 'matching')
+        matchingAnimate(sumo,vehiclesStruct,pedestriansStruct,outputMap)
+    else
+        printAnimate(sumo,vehiclesStruct,pedestriansStruct,outputMap)
+    end
     traci.close();
 end
 
