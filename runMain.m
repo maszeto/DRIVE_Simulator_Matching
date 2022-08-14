@@ -61,7 +61,7 @@ function runMain( map, sumo, BS, linkBudget )
     elseif strcmp(SIMULATOR.scenario,'v2v')
         [ vehicles, pedestrians ] = runV2V(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
     elseif strcmp(SIMULATOR.scenario, 'matching')
-        [ vehicles, pedestrians ] = runMatching(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
+        [ vehicles, pedestrians ] = runMatching(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile);
     
     else
         fprintf('Wrong scenario name. Please check the chosen scenario in simSettings.m file.\n')

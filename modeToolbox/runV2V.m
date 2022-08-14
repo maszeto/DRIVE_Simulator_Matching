@@ -54,12 +54,17 @@ function [vehicles,pedestrians] = ...
             nearbyTile(outputMap,vehicleTimestep,pedestrianTimestep);
         
         [tmp,~] = size(vehicleTimestep);
-        
+        %Here is where the "Matching" is done
         if tmp>1
             [ distanceVehicle, idxVehicle ] = pdist2(vehicleTimestep(:,2:3), vehicleTimestep(:,2:3), 'euclidean', 'Smallest', 2);
+            %Above line gives you distanceVehicle a matrix ordered by
+            %vehicle ID (col) and the distance to nearest vehicle
+            %[0,0,0;705.230114126486,797.513865212231,705.230114126486]
+            %idxVehicle is just the vehicle IDs instead of the distance
+            %farthest
             distanceVehicle = distanceVehicle(2:end,:);
-            idxVehicle = idxVehicle(2:end,:);
-            idx = distanceVehicle<=BS.mmWaves.maxTXDistance;
+            idxVehicle = idxVehicle(2:end,:);%Only take 2nd row
+            idx = distanceVehicle<=BS.mmWaves.maxTXDistance;%Checking if it is in range, if it is then a link is created
             v2vLinks(vehicleTimestep(idx,1)'+1) = v2vLinks(vehicleTimestep(idx,1)'+1) + 1;
         end
         
