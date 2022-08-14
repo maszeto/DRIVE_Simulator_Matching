@@ -39,6 +39,7 @@ sumo.gui = 0; % set to 1 if the user wants to use the SUMO GUI
 
 %% Matching scenario Config 
 global MATCHING
+MATCHING.interactive = 1; %Run interactive simulation (requires user input) 0 or 1
 MATCHING.lidarRad = 200; %LiDAR viewing radius in meters
 
 %% Lookup Tables Vehicles Types

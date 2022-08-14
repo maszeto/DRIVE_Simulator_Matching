@@ -17,6 +17,7 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
 % email: ioannis.mavromatis@toshiba-bril.com    
 
     global SIMULATOR
+    global MATCHING
     
     if SIMULATOR.map == 0
         mapPrint(outputMap);
@@ -60,7 +61,8 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
    
     % Update all the vehicle and pedestrian positions per timeslot
     hold off;
-    for timeIndex = 1:length(timeSteps)-1
+    timeIndex = 1;
+    while timeIndex <= length(timeSteps)-1
         t = timeSteps(timeIndex);
         set(ht,'String',cat(2,'Time (sec) = ',num2str(t,4)));
         if ~isempty(fieldnames(vehicle))
@@ -76,6 +78,20 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
         end
         
         drawnow;
-%         pause(0.02);
+        
+        if MATCHING.interactive == 1
+            prompt = "Press enter to continue or enter timestep to jump to: ";
+            txt = input(prompt);
+            if ~isempty(txt)
+                if txt <= length(timeSteps)-1
+                    timeIndex = txt;
+                end
+            else
+                timeIndex = timeIndex + 1;
+            end
+        else
+            timeIndex = timeIndex + 1;
+        end
+        
     end
 end
