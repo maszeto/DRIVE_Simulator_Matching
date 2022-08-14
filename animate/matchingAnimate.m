@@ -83,8 +83,8 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
             prompt = "Press enter to continue or enter timestep to jump to: ";
             txt = input(prompt);
             if ~isempty(txt)
-                if txt <= length(timeSteps)-1
-                    timeIndex = txt;
+                if txt < length(timeSteps)-1
+                    timeIndex = txt + 1;
                 end
             else
                 timeIndex = timeIndex + 1;
