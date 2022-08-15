@@ -59,8 +59,10 @@ function [vehicles,pedestrians] = ...
             %Check which vehicles are within LiDAR range
             vehiclesInRange = distanceVehicle<=MATCHING.lidarRad;%Checking if it is in range, if it is then a link is created
             
-            %Then check LoS
+            %TODO Then check LoS
             
+            %
+            getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
         
         end
         % Get tile each vehicle is closest to (this is only for the current
@@ -81,7 +83,7 @@ function [vehicles,pedestrians] = ...
     %Parse mobility files with the vehicle information, now we have vehicle
     %coordinate and type at each timestep. 
     [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
-    
+    ans = 1+2;
 
 end
 
