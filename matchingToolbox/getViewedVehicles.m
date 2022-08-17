@@ -24,7 +24,20 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
 % email: maszeto@asu.edu
 
     global MATCHING;
-
+    
+    %Get all vehicles in the map to test, this should only be generated
+    %once
+    buildingsToTest = [];
+    buildingIds = outputMap.buildingIncentre(:,1);
+    for i = 1:length(buildingIds)
+        building = outputMap.buildings(find(ismember(outputMap.buildings(:,1), buildingIds(i), 'rows')), [2,3]); 
+        buildingsToTest = [ buildingsToTest ;
+            building(1:end-1,1) ...
+            building(1:end-1,2) ...
+            building(2:end,1)   ...
+            building(2:end,2) ];
+    end
+    
     %Vehicles in view is a 2d array, first column is vehicle id, other
     %columns are nearest vehicles by id
     vehiclesInView = zeros(length(vehicleTimestep(:,1)), length(vehicleTimestep(:,1))+1);
@@ -39,6 +52,8 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
     %Check which vehicles are within LiDAR range
     vehiclesInRange = distanceVehicle<=MATCHING.lidarRad;%Checking if it is in range,
     
+    %linksToTest = [0,0,0,0];
+    
     %Now we need to fill the vehiclesInView array
     for i = 1:length(vehicleTimestep(:,1))
         %set ID
@@ -49,47 +64,58 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
                 %move ptr to empty index 
                 ptr = ptr + 1;
                 
-                %add vehicle ID of vehicle in view at positon
-                vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
+                linkToTest = [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)];
+                
+                %Test Links
+                intersectCnt = segments_intersect_test(linkToTest, buildingsToTest);
+                
+                    %add vehicle ID of vehicle in view at positon
+                    vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
+                
+                
+                
+                %now add the pair of points to linksToTest in the form
+                %[x1,y1,x2,y2] check to make sure [x2,y2,x1,y1] is not
+                %already in the array TODO:Optimize
+%                 if(ismember(linksToTest, [vehicleTimestep(j,2), ...
+%                         vehicleTimestep(j,3), vehicleTimestep(i,2), ...
+%                         vehicleTimestep(i,3)], 'rows') == 0)
+%                     linksToTest = [linksToTest; [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)]]; 
+%                     %test link
+%                     
+%                 end
             end
         end
     end
-    
-    
-    %TODO Then check LoS
-     % Use the max TX distance for both pdist2 functions as it is the longest
-    % possible one.
-    [ distanceTiles, sortedIndexes ] = pdist2(outputMap.inCentresTile(:,1:2), outputMap.inCentresTile(:,1:2),'euclidean','Radius',MATCHING.lidarRad);
-
-    distanceTiles = cellfun(@(x)round(x,1),distanceTiles,'UniformOutput',false);
-
-    [ ~, sortedIndicesBuildings] = pdist2([outputMap.buildings(:,3) outputMap.buildings(:,2)], outputMap.inCentresTile(:,1:2),'euclidean','Radius',MATCHING.lidarRad);
-
-    % initiliase the cells to be returned later
-    losIDs = cell(1,length(sortedIndexes));
-    nLosIDs = cell(1,length(sortedIndexes));
-    buildingIds = cell(1,length(sortedIndexes));
-    
-    % find the unique building polygons to compare the rays later
-    for i = 1:length(sortedIndicesBuildings)
-        buildingIds{i} = unique(outputMap.buildings(sortedIndicesBuildings{i},1));
-    end
-    raysToTest = [ repmat(outputMap.inCentresTile(1,1:2),[length(sortedIndexes{1}),1]), outputMap.inCentresTile(sortedIndexes{1},1:2) ];
-    %So rayst to test is in the [x1,y1,x2,y2] format, we can replace rays
-    %with p2p v2v links
-    buildingsToTest = [];
-    for k = 1:length(buildingIds{1}) %Not sure how vehicle IDs is decided
-        building = [ outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 3 ) ...
-            outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 2 ) ]; 
-        % I think this is all the points in the perimeter of the building ^
-        %This creates short vectors between perimeter points of the
-        %building, [x1,y1,x1+1,y1+1] (not +1 but one index more)
-        buildingsToTest = [ buildingsToTest ;
-            building(1:end-1,1) ...
-            building(1:end-1,2) ...
-            building(2:end,1)   ...
-            building(2:end,2) ];
-    end
+%     linksToTest(1,:) = [];%remove zero row from init
+%     %Now that we have vehicles in range of one another, we need to test LoS
+%     %Links to test
+%     %remove duplicates in links to test, we have recorded each v2v link
+%     %twice
+% %     [~,iULinks,~] = unique(sort(linksToTest,2), 'rows');%Find indeces of unique links
+% %     uLinksToTest = linksToTest(iULinks,:);
+%     
+%     %raysToTest = [ repmat(outputMap.inCentresTile(1,1:2),[length(sortedIndexes{1}),1]), outputMap.inCentresTile(sortedIndexes{1},1:2) ];
+%     %So rayst to test is in the [x1,y1,x2,y2] format, we can replace rays
+%     %with p2p v2v links
+% 
+%     
+%     interSect = segments_intersect_test_vector(linksToTest,buildingsToTest);
+% 
+%     %  Find the intersections with the road polygons
+%     interSect = logical(interSect);
+%     for k = 1:length(buildingIds{1}) %Not sure how vehicle IDs is decided
+%         building = [ outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 3 ) ...
+%             outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 2 ) ]; 
+%         % I think this is all the points in the perimeter of the building ^
+%         %This creates short vectors between perimeter points of the
+%         %building, [x1,y1,x1+1,y1+1] (not +1 but one index more)
+%         buildingsToTest = [ buildingsToTest ;
+%             building(1:end-1,1) ...
+%             building(1:end-1,2) ...
+%             building(2:end,1)   ...
+%             building(2:end,2) ];
+%     end
 %     if ~isempty(buildingsToTest)
 %         % if any NaNs were parsed during the loading phase of SUMO or
 %         % while loading the OSM map, remove these buildings
