@@ -1,4 +1,4 @@
-function [vehiclesInView] = getViewedVehicles(sumo,map, outputMap, vehicleTimestep)
+function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimestep)
 %GETVIEWEDVEHICLES Get vehicles in LiDAR LOS from input vehicle 
 %   For the current timestep, return a list of Vehicle ID's of each vehicle
 %   within the LiDAR LOS for every vehicle in the sim 
@@ -25,9 +25,9 @@ function [vehiclesInView] = getViewedVehicles(sumo,map, outputMap, vehicleTimest
 
     global MATCHING;
 
-
-    vehiclesInView.vid = [];%Array of vehicleIDs
-    %vehiclesInView.viewed = [];%Array of arrays of viewed vehicles;
+    %Vehicles in view is a 2d array, first column is vehicle id, other
+    %columns are nearest vehicles by id
+    vehiclesInView = zeros(length(vehicleTimestep(:,1)), length(vehicleTimestep(:,1))+1);
     
     %distanceVehicle is a matrix representing distance of each vehicle
     %to all other vehicles in the map (vehicle id is row and column
@@ -38,8 +38,79 @@ function [vehiclesInView] = getViewedVehicles(sumo,map, outputMap, vehicleTimest
             
     %Check which vehicles are within LiDAR range
     vehiclesInRange = distanceVehicle<=MATCHING.lidarRad;%Checking if it is in range,
-            
+    
+    %Now we need to fill the vehiclesInView array
+    for i = 1:length(vehicleTimestep(:,1))
+        %set ID
+        vehiclesInView(i,1) = vehicleTimestep(i,1) + 1;
+        ptr = 1;%Holds position of where last edit was made, since we are filling in arr of zeros
+        for j = 1:length(vehicleTimestep(:,1))
+            if (vehiclesInRange(i,j) == 1) && (i ~= j) 
+                %move ptr to empty index 
+                ptr = ptr + 1;
+                
+                %add vehicle ID of vehicle in view at positon
+                vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
+            end
+        end
+    end
+    
+    
     %TODO Then check LoS
+     % Use the max TX distance for both pdist2 functions as it is the longest
+    % possible one.
+    [ distanceTiles, sortedIndexes ] = pdist2(outputMap.inCentresTile(:,1:2), outputMap.inCentresTile(:,1:2),'euclidean','Radius',MATCHING.lidarRad);
+
+    distanceTiles = cellfun(@(x)round(x,1),distanceTiles,'UniformOutput',false);
+
+    [ ~, sortedIndicesBuildings] = pdist2([outputMap.buildings(:,3) outputMap.buildings(:,2)], outputMap.inCentresTile(:,1:2),'euclidean','Radius',MATCHING.lidarRad);
+
+    % initiliase the cells to be returned later
+    losIDs = cell(1,length(sortedIndexes));
+    nLosIDs = cell(1,length(sortedIndexes));
+    buildingIds = cell(1,length(sortedIndexes));
+    
+    % find the unique building polygons to compare the rays later
+    for i = 1:length(sortedIndicesBuildings)
+        buildingIds{i} = unique(outputMap.buildings(sortedIndicesBuildings{i},1));
+    end
+    raysToTest = [ repmat(outputMap.inCentresTile(1,1:2),[length(sortedIndexes{1}),1]), outputMap.inCentresTile(sortedIndexes{1},1:2) ];
+    %So rayst to test is in the [x1,y1,x2,y2] format, we can replace rays
+    %with p2p v2v links
+    buildingsToTest = [];
+    for k = 1:length(buildingIds{1}) %Not sure how vehicle IDs is decided
+        building = [ outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 3 ) ...
+            outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 2 ) ]; 
+        % I think this is all the points in the perimeter of the building ^
+        %This creates short vectors between perimeter points of the
+        %building, [x1,y1,x1+1,y1+1] (not +1 but one index more)
+        buildingsToTest = [ buildingsToTest ;
+            building(1:end-1,1) ...
+            building(1:end-1,2) ...
+            building(2:end,1)   ...
+            building(2:end,2) ];
+    end
+%     if ~isempty(buildingsToTest)
+%         % if any NaNs were parsed during the loading phase of SUMO or
+%         % while loading the OSM map, remove these buildings
+%         buildingsToTest(isnan(buildingsToTest(:,1)),:) = [];
+%         buildingsToTest(isnan(buildingsToTest(:,3)),:) = [];
+% 
+%         % calculate the LOS and NLOS status for the all links
+%         % for each given ray using the buildings found before
+%         [ losLinks,nLosLinks, losIDs{1}, nLosIDs{1},losNlosStatus{1} ] = ...
+%             losNlosCalculation(sortedIndexes{1},raysToTest,buildingsToTest);
+% 
+%     else
+%         % when no buildings are available, all tiles are assumed to
+%         % be in LOS
+%         losIDs{1} = sortedIndexes{1};
+%         losNlosStatus{1} = true(1,length(losIDs{1}));
+%     end
+    
+    
+    
+    
     
     %Build vehiclesInView struct 
     
