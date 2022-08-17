@@ -55,7 +55,9 @@ function mapPrint( outputMap, potRSUPos )
         foliageNew(idx,:) = outputMap.foliageAnimation;
     end
 
-    set(gcf, 'Position', get(0, 'Screensize'));
+    %set(gcf, 'Position', get(0, 'Screensize'));//use if you want to
+    %default to full screen
+    set(gcf, 'Resize', 'on');
     
     if ~isempty(outputMap.buildingsAnimation)
         obj = mapshow(buildingsNew(:,3),buildingsNew(:,2),'DisplayType','polygon','FaceColor',[1 0.2 0.2],'LineStyle',':'); % plot the map parsed from SUMO network file;

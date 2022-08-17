@@ -36,7 +36,7 @@ function [obj,typePos] = generateLineObjects(node,structure)
             obj(idx) = plot(node(idx).v_x(1),node(idx).v_y(1),markers(structure.vehNode(idx).vehicleType,:),'color',...
                             colours(structure.vehNode(idx).vehicleType,:),'MarkerSize', 20,...
                             'MarkerFaceColor',colours(structure.vehNode(idx).vehicleType,:));
-            
+                                                        
             set(get(get(obj(idx),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
                         
             if typePos(1,structure.vehNode(idx).vehicleType)==0
