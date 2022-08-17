@@ -50,7 +50,8 @@ function [vehicles,pedestrians] = ...
 
         if tmp>1
             %Then check which vehicles have LoS with each other
-            viewedVehicles(vehicleTimestep) = getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
+            %viewedVehicles(vehicleTimestep) = 
+            getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
  
         end
   
@@ -62,6 +63,13 @@ function [vehicles,pedestrians] = ...
     %Parse mobility files with the vehicle information, now we have vehicle
     %coordinate and type at each timestep. 
     [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
-
+    
+    
+    %iterate through timesteps
+    %   runMatching()
+    %   if (beamselsim)
+    %       runBeamSel(vehicles, buildings)
+    
+    
 end
 
