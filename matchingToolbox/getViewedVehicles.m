@@ -17,8 +17,9 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
 %                      getVehiclesAndPedestrians function)
 %
 %  Output :
-%     vehiclesInView: Struct mapping Vehicle IDs to an array of vehicles it
-%                       can see
+%     vehiclesInView:  Vehicles in view is a 2d array, first column is vehicle id, other
+%                       columns are nearest vehicles by id. You can ignore
+%                       zeros
 %
 % Copyright (c) 2022, Matthew Szeto
 % email: maszeto@asu.edu
@@ -59,8 +60,6 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
         ptr = 1;%Holds position of where last edit was made, since we are filling in arr of zeros
         for j = 1:length(vehicleTimestep(:,1))
             if (vehiclesInRange(i,j) == 1) && (i ~= j) 
-                %move ptr to empty index 
-                ptr = ptr + 1;
                 
                 linkToTest = [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)];
                 
@@ -69,6 +68,10 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
                 intersectCnt = segments_intersect_test(linkToTest, buildingsToTest);%number of intersections
                 
                 if intersectCnt == 0
+                    
+                    %move ptr to empty index 
+                    ptr = ptr + 1;
+                    
                     %add vehicle ID of vehicle in view at positon
                     vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
                 end

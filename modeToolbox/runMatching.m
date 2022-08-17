@@ -49,32 +49,11 @@ function [vehicles,pedestrians] = ...
         [tmp,~] = size(vehicleTimestep);
 
         if tmp>1
-            %distanceVehicle is a matrix representing distance of each vehicle
-            %to all other vehicles in the map (vehicle id is row and column
-            %index, we want the vehicle id to correlate to row and column,
-            %so we need to sort vehicleTimestep first
-            vehicleTimestep = sortrows(vehicleTimestep);
-            distanceVehicle = pdist2(vehicleTimestep(:,2:3), vehicleTimestep(:,2:3), 'euclidean');
-            
-            %Check which vehicles are within LiDAR range
-            vehiclesInRange = distanceVehicle<=MATCHING.lidarRad;%Checking if it is in range, if it is then a link is created
-            
-            %TODO Then check LoS
-            
-            %
-            getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
-        
+            %Then check which vehicles have LoS with each other
+            viewedVehicles(vehicleTimestep) = getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
+ 
         end
-        % Get tile each vehicle is closest to (this is only for the current
-        % timestep) 
-        %DistanceVehicleTile - Distance of vehicle from tile (vehicle id is index) 
-        %idxVehicleTile - Tile vehicle is closest to (vehicle id is index)
-        [distanceVehicleTile,idxVehicleTile,distancePedestrianTile,idxPedestrianTile] = ...
-            nearbyTile(outputMap,vehicleTimestep,pedestrianTimestep);
-        
-
-        
-        
+  
         % Progress to the timestep
         traci.simulationStep;
         
@@ -83,7 +62,6 @@ function [vehicles,pedestrians] = ...
     %Parse mobility files with the vehicle information, now we have vehicle
     %coordinate and type at each timestep. 
     [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
-    ans = 1+2;
 
 end
 
