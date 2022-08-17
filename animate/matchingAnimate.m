@@ -58,7 +58,15 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
     end
     legendString{i+1} = 'Pedestrian';
     legend(legendString,'Location','eastoutside')
-   
+    
+    %Plot the Building IDs
+    if MATCHING.verboseMap == 1
+        for i = 1:length(outputMap.buildingIncentre)
+            text(outputMap.buildingIncentre(i,2),outputMap.buildingIncentre(i,3),int2str(outputMap.buildingIncentre(i,1)));
+        end
+    end
+    
+    
     % Update all the vehicle and pedestrian positions per timeslot
     hold off;
     timeIndex = 1;
@@ -69,13 +77,17 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
         set(ht,'String',cat(2,'Time (sec) = ',num2str(t,4)));
         if ~isempty(fieldnames(vehicle))
             for nodeIndex = 1:length(vehicle.vehNode)
+                
                 set(vNodePos(nodeIndex),'XData',vNode(nodeIndex).v_x(timeIndex),'YData',vNode(nodeIndex).v_y(timeIndex));
-                if (exist('vehLabels','var') == 0)
-                    vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));
-                elseif (length(vehLabels) < nodeIndex)
-                    vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));   
-                else
-                    set(vehLabels(nodeIndex),'Position',[vNode(nodeIndex).v_x(timeIndex), vNode(nodeIndex).v_y(timeIndex), 0]);
+                
+                if MATCHING.verboseMap == 1
+                    if (exist('vehLabels','var') == 0)
+                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));
+                    elseif (length(vehLabels) < nodeIndex)
+                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));   
+                    else
+                        set(vehLabels(nodeIndex),'Position',[vNode(nodeIndex).v_x(timeIndex), vNode(nodeIndex).v_y(timeIndex), 0]);
+                    end
                 end
             end
         end
