@@ -62,7 +62,9 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
     %Plot the Building IDs
     if MATCHING.verboseMap == 1
         for i = 1:length(outputMap.buildingIncentre)
-            text(outputMap.buildingIncentre(i,2),outputMap.buildingIncentre(i,3),int2str(outputMap.buildingIncentre(i,1)));
+            %label buildings, 3rd column is x and 2nd column is y for some
+            %reason
+            text(outputMap.buildingIncentre(i,3),outputMap.buildingIncentre(i,2),int2str(outputMap.buildingIncentre(i,1)));
         end
     end
     
