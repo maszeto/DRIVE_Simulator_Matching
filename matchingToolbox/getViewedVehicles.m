@@ -51,9 +51,7 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
             
     %Check which vehicles are within LiDAR range
     vehiclesInRange = distanceVehicle<=MATCHING.lidarRad;%Checking if it is in range,
-    
-    %linksToTest = [0,0,0,0];
-    
+
     %Now we need to fill the vehiclesInView array
     for i = 1:length(vehicleTimestep(:,1))
         %set ID
@@ -66,97 +64,18 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
                 
                 linkToTest = [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)];
                 
-                %Test Links
-                intersectCnt = segments_intersect_test(linkToTest, buildingsToTest);
+                %Test Links, only add if there are no buildings blocking,
+                %need to check for other vehicles
+                intersectCnt = segments_intersect_test(linkToTest, buildingsToTest);%number of intersections
                 
+                if intersectCnt == 0
                     %add vehicle ID of vehicle in view at positon
                     vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
-                
-                
-                
-                %now add the pair of points to linksToTest in the form
-                %[x1,y1,x2,y2] check to make sure [x2,y2,x1,y1] is not
-                %already in the array TODO:Optimize
-%                 if(ismember(linksToTest, [vehicleTimestep(j,2), ...
-%                         vehicleTimestep(j,3), vehicleTimestep(i,2), ...
-%                         vehicleTimestep(i,3)], 'rows') == 0)
-%                     linksToTest = [linksToTest; [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)]]; 
-%                     %test link
-%                     
-%                 end
+                end
+
             end
         end
     end
-%     linksToTest(1,:) = [];%remove zero row from init
-%     %Now that we have vehicles in range of one another, we need to test LoS
-%     %Links to test
-%     %remove duplicates in links to test, we have recorded each v2v link
-%     %twice
-% %     [~,iULinks,~] = unique(sort(linksToTest,2), 'rows');%Find indeces of unique links
-% %     uLinksToTest = linksToTest(iULinks,:);
-%     
-%     %raysToTest = [ repmat(outputMap.inCentresTile(1,1:2),[length(sortedIndexes{1}),1]), outputMap.inCentresTile(sortedIndexes{1},1:2) ];
-%     %So rayst to test is in the [x1,y1,x2,y2] format, we can replace rays
-%     %with p2p v2v links
-% 
-%     
-%     interSect = segments_intersect_test_vector(linksToTest,buildingsToTest);
-% 
-%     %  Find the intersections with the road polygons
-%     interSect = logical(interSect);
-%     for k = 1:length(buildingIds{1}) %Not sure how vehicle IDs is decided
-%         building = [ outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 3 ) ...
-%             outputMap.buildings( ismember(outputMap.buildings(:,1), buildingIds{1}(k)), 2 ) ]; 
-%         % I think this is all the points in the perimeter of the building ^
-%         %This creates short vectors between perimeter points of the
-%         %building, [x1,y1,x1+1,y1+1] (not +1 but one index more)
-%         buildingsToTest = [ buildingsToTest ;
-%             building(1:end-1,1) ...
-%             building(1:end-1,2) ...
-%             building(2:end,1)   ...
-%             building(2:end,2) ];
-%     end
-%     if ~isempty(buildingsToTest)
-%         % if any NaNs were parsed during the loading phase of SUMO or
-%         % while loading the OSM map, remove these buildings
-%         buildingsToTest(isnan(buildingsToTest(:,1)),:) = [];
-%         buildingsToTest(isnan(buildingsToTest(:,3)),:) = [];
-% 
-%         % calculate the LOS and NLOS status for the all links
-%         % for each given ray using the buildings found before
-%         [ losLinks,nLosLinks, losIDs{1}, nLosIDs{1},losNlosStatus{1} ] = ...
-%             losNlosCalculation(sortedIndexes{1},raysToTest,buildingsToTest);
-% 
-%     else
-%         % when no buildings are available, all tiles are assumed to
-%         % be in LOS
-%         losIDs{1} = sortedIndexes{1};
-%         losNlosStatus{1} = true(1,length(losIDs{1}));
-%     end
-    
-    
-    
-    
-    
-    %Build vehiclesInView struct 
-    
-%     for i = 1:size(vehiclesInRange:1)
-%         
-%         %Get this vehicles ID
-%         vehiclesInView.vid(i) = vehicleTimestep(i,1);
-%         
-%         %use temp array to get list of vehicles in view
-%         tmp = [];
-%         for j = 1:size(1:vehiclesInRange)
-%             if vehiclesInRange(i,j) == 1 && i~=j 
-%                 tmp(end+1)= vehicleTimestep(j,1);
-%             end
-%         end
-%         
-%         %set temp array 
-%         vehiclesInView.veiwed(i) = tmp;
-%         
-%     end
-%     10 - 1;
+
 end
 
