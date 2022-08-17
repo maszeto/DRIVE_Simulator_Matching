@@ -62,12 +62,21 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
     % Update all the vehicle and pedestrian positions per timeslot
     hold off;
     timeIndex = 1;
+
     while timeIndex <= length(timeSteps)-1
+        
         t = timeSteps(timeIndex);
         set(ht,'String',cat(2,'Time (sec) = ',num2str(t,4)));
         if ~isempty(fieldnames(vehicle))
             for nodeIndex = 1:length(vehicle.vehNode)
                 set(vNodePos(nodeIndex),'XData',vNode(nodeIndex).v_x(timeIndex),'YData',vNode(nodeIndex).v_y(timeIndex));
+                if (exist('vehLabels','var') == 0)
+                    vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));
+                elseif (length(vehLabels) < nodeIndex)
+                    vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));   
+                else
+                    set(vehLabels(nodeIndex),'Position',[vNode(nodeIndex).v_x(timeIndex), vNode(nodeIndex).v_y(timeIndex), 0]);
+                end
             end
         end
         
@@ -78,6 +87,7 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
         end
         
         drawnow;
+
         
         if MATCHING.interactive == 1
             prompt = "Press enter to continue or enter timestep to jump to: ";
