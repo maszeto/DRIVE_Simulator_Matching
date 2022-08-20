@@ -69,7 +69,18 @@ function [vehicles,pedestrians] = ...
     %Parse vehicle viewedVehicles to add information to vehiclesStruct as
     %to which vehicles are in view
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
-
+    
+    vehicleStruct = getVehicleStruct(vehiclesStruct,170);
+    
+    
+    
+    %Testing the functions needed for the stable fixtures matching game
+    %timeliness(vehiclesStruct); %TODO: Fails on VEHDYNAMICS, figure out
+    %what that node does 
+    
+    
+    
+    
     %iterate through timesteps
     %   runMatching()
     %   if (beamselsim)

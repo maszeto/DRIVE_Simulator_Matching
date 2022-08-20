@@ -2,6 +2,8 @@ function [ vehicleStruct ] = timeliness(vehicleStruct)
 % TIMELINESS 
 %
 % Input:
+%       vehicleStruct with the following fields:
+%           
 %
 % Output:
 %   vehicleStruct :   This structure is updated with the timeliness information
