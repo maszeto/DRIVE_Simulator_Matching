@@ -70,13 +70,15 @@ function [vehicles,pedestrians] = ...
     %to which vehicles are in view
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
-    vehicleStruct = getVehicleStruct(vehiclesStruct,170);
-    
-    
-    
-    %Testing the functions needed for the stable fixtures matching game
-    %timeliness(vehiclesStruct); %TODO: Fails on VEHDYNAMICS, figure out
-    %what that node does 
+    %Run Matching
+    plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
+    for i = 1:sumo.endTime
+        
+        if ~isempty(viewedVehicles{i})
+            utilityFunc = @u_nearest;
+            [a_iElements,S] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+        end
+    end
     
     
     

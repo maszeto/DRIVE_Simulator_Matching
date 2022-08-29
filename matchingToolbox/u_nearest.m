@@ -9,7 +9,7 @@ PL = zeros(length(vehiclesStruct.vehNode), length(vehiclesStruct.vehNode)); %ind
 %We can use viewedVehicles to get candidates for the matching game, then
 %rank them based on distance from vehiclesStruct
 
-curViewedVehicles = viewedVehicles(timeStep);
+curViewedVehicles = viewedVehicles{timeStep};
 
 
 %for each vehicle in this timestep
@@ -28,11 +28,14 @@ for i=1:length(curViewedVehicles(:,1))
     end
     
     %sort based on distance
-    sortrows(curDist, 2, 'ascending');
-    
+    if ~isempty(curDist)
+        curDist = sortrows(curDist, 2, 'ascend');
+    end
     %Fill in PL accordingly
-    for k = 1:length(curDist)
-        PL(curVid, curDist(k:1)) = maxRank - k + 1;        
+    if ~isempty(curDist)
+        for k = 1:length(curDist(:,1))
+            PL(curVid, curDist(k,1)) = maxRank - k + 1;        
+        end
     end
     
     
