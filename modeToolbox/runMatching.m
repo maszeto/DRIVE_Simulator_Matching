@@ -37,11 +37,11 @@ function [vehicles,pedestrians] = ...
     
     % Start iterating for all the timesteps, not the most effecient but
     % good enough for now
+    fprintf("Preprocessing mobility traces ...\n");
     for i = 1:sumo.endTime
         vehicleIDs = traci.vehicle.getIDList();
         pedestrianIDs = traci.person.getIDList();
         timeStep = traci.simulation.getTime;
-        fprintf('The timestep is: %f\n',timeStep)
         
         %vehicleTimestep is all the vehicles positions at the current
         %timestep (ID, X, Y, timestep, id)
@@ -71,12 +71,15 @@ function [vehicles,pedestrians] = ...
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
     %Run Matching
+    fprintf("Running Stable Fixtures Matching ...\n");
+    matches = {};
     plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
     for i = 1:sumo.endTime
-        
+        fprintf('The timestep is: %f\n',i)
         if ~isempty(viewedVehicles{i})
             utilityFunc = @u_nearest;
-            [a_iElements,S] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+            [a_iElements, S] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+            matches{i} = a_iElements;
         end
     end
     
