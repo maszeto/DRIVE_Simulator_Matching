@@ -71,22 +71,24 @@ function [vehicles,pedestrians] = ...
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
     %Run Matching
-    fprintf("Running Stable Fixtures Matching ...\n");
-    matches = {};
-    matchSets = {};
-    plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
-    for i = 1:sumo.endTime
-        fprintf('The timestep is: %f\n',i)
-        if ~isempty(viewedVehicles{i})
-            utilityFunc = @u_nearest;
-            [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
-            matches{i} = a_iElements;
-            matchSets{i} = matchSet;
-        end
-    end
-    toc
-    fprintf('Saving preprocessed link file:');
-    save('matchVars', 'matches', 'matchSets');
+%     fprintf("Running Stable Fixtures Matching ...\n");
+%     matches = {};
+%     matchSets = {};
+%     plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
+%     for i = 1:sumo.endTime
+%         fprintf('The timestep is: %f\n',i)
+%         if ~isempty(viewedVehicles{i})
+%             utilityFunc = @u_nearest;
+%             [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+%             matches{i} = a_iElements;
+%             matchSets{i} = matchSet;
+%         end
+%     end
+%     toc
+%     fprintf('Saving preprocessed link file:');
+%     save('matchVars', 'matches', 'matchSets');
+    load('matchVars', 'matches', 'matchSets');
+    [vehiclesStruct] = addMatches(matches, vehiclesStruct);
     fprintf("Waiting");
     
     
