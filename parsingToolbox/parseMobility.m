@@ -35,7 +35,7 @@ function [ vehicleStruct, pedestrianStruct ] = parseMobility( sumo, vehicle, ped
     emptyCounter = 0; % Counter to remove non-existing vehicles in SUMO file (ID missing)
     missingIDs = [];
     
-    for nodeIndexTmp = 1:max(uniqueVehicleIDs)
+    for nodeIndexTmp = 1:length(uniqueVehicleIDs)
         vArrayTmp = find(vehicle(:,1) == nodeIndexTmp-1);
         
         if ~isempty(vArrayTmp)

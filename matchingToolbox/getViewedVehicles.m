@@ -64,7 +64,7 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
                 linkToTest = [vehicleTimestep(i,2), vehicleTimestep(i,3), vehicleTimestep(j,2), vehicleTimestep(j,3)];
                 
                 %Test Links, only add if there are no buildings blocking,
-                %need to check for other vehicles
+                %TODO: need to check for other vehicles
                 intersectCnt = segments_intersect_test(linkToTest, buildingsToTest);%number of intersections
                 
                 if intersectCnt == 0

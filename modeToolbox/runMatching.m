@@ -31,15 +31,17 @@ function [vehicles,pedestrians] = ...
     pedestrians = [];
     vehiclesStruct = {};
     pedestrianStruct = {};
-
+    
+    %Holds vehicles in view at every timestep
+    viewedVehicles = {};
     
     % Start iterating for all the timesteps, not the most effecient but
     % good enough for now
+    fprintf("Preprocessing mobility traces ...\n");
     for i = 1:sumo.endTime
         vehicleIDs = traci.vehicle.getIDList();
         pedestrianIDs = traci.person.getIDList();
         timeStep = traci.simulation.getTime;
-        fprintf('The timestep is: %f\n',timeStep)
         
         %vehicleTimestep is all the vehicles positions at the current
         %timestep (ID, X, Y, timestep, id)
@@ -50,8 +52,8 @@ function [vehicles,pedestrians] = ...
 
         if tmp>1
             %Then check which vehicles have LoS with each other
-            %viewedVehicles(vehicleTimestep) = 
-            getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
+            viewedVehicles{timeStep} = getViewedVehicles(sumo,map, outputMap, vehicleTimestep);
+
  
         end
   
@@ -62,7 +64,30 @@ function [vehicles,pedestrians] = ...
     
     %Parse mobility files with the vehicle information, now we have vehicle
     %coordinate and type at each timestep. 
-    [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
+    [ vehiclesStruct, ~ ] = parseMobility(sumo, vehicles, pedestrians);
+    
+    %Parse vehicle viewedVehicles to add information to vehiclesStruct as
+    %to which vehicles are in view
+    [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
+    
+    %Run Matching
+    fprintf("Running Stable Fixtures Matching ...\n");
+    matches = {};
+    matchSets = {};
+    plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
+    for i = 1:sumo.endTime
+        fprintf('The timestep is: %f\n',i)
+        if ~isempty(viewedVehicles{i})
+            utilityFunc = @u_nearest;
+            [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+            matches{i} = a_iElements;
+            matchSets{i} = matchSet;
+        end
+    end
+    toc
+    fprintf('Saving preprocessed link file:');
+    save('matchVars', 'matches', 'matchSets');
+    fprintf("Waiting");
     
     
     %iterate through timesteps
