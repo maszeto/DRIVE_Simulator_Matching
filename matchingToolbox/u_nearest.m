@@ -23,7 +23,12 @@ for i=1:length(curViewedVehicles(:,1))
         
         %get distance between vehicle we are evaluating and vehicle in view
         %[vid, distance between vid and curVid]
-        curDist = [curDist; [curViewedVehicles(i,j), getVehNodeDistance(curVid, curViewedVehicles(i,j), vehiclesStruct, timeStep)]];
+        %if for some reason, vehicle can see that vehicle, but it is not in
+        %the simulation yet
+        if ~isempty(getVehNodeDistance(curVid, curViewedVehicles(i,j), vehiclesStruct, timeStep))
+            curDist = [curDist; [curViewedVehicles(i,j), getVehNodeDistance(curVid, curViewedVehicles(i,j), vehiclesStruct, timeStep)]];
+        end
+        
         j = j + 1;
     end
     

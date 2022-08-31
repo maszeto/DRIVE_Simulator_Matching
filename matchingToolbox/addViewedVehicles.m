@@ -16,8 +16,11 @@ for idx = 1:length(vehiclesStruct.vehNode)
         if ~isempty(viewedVehicles{timeStep})
             row = find(ismember(viewedVehicles{timeStep}(:,1), idx));
             vehicles = viewedVehicles{timeStep}(row,:);
-            vehicles(1) = []; %delete first col (vehicleID)
-            vehicles = nonzeros(vehicles);
+            if ~isempty(vehicles)
+                vehicles(1) = []; %delete first col (vehicleID)
+                vehicles = nonzeros(vehicles);
+            end
+
         else
             vehicles = [];
         end

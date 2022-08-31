@@ -71,24 +71,28 @@ function [vehicles,pedestrians, xyLinks] = ...
     %to which vehicles are in view
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
-    %Run Matching
-%     fprintf("Running Stable Fixtures Matching ...\n");
-%     matches = {};
-%     matchSets = {};
-%     plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
-%     for i = 1:sumo.endTime
-%         fprintf('The timestep is: %f\n',i)
-%         if ~isempty(viewedVehicles{i})
-%             utilityFunc = @u_nearest;
-%             [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
-%             matches{i} = a_iElements;
-%             matchSets{i} = matchSet;
-%         end
-%     end
-%     toc
-%     fprintf('Saving preprocessed link file:');
-%     save('matchVars', 'matches', 'matchSets');
-    load('matchVars', 'matches', 'matchSets');
+    %Run Matching, Use the following block of code or load your own
+    fprintf("Running Stable Fixtures Matching ...\n");
+    matches = {};
+    matchSets = {};
+    plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
+    for i = 1:sumo.endTime
+        fprintf('The timestep is: %f\n',i)
+        if ~isempty(viewedVehicles{i})
+            utilityFunc = @u_nearest;
+            [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
+            matches{i} = a_iElements;
+            matchSets{i} = matchSet;
+        end
+    end
+    toc
+    fprintf('Saving preprocessed link file:');
+    save('matchVars', 'matches', 'matchSets');
+
+    %Use below code if you already have data
+%     load('matchVars', 'matches', 'matchSets');
+    
+    
     [vehiclesStruct] = addMatches(matches, vehiclesStruct);
     xyLinks = getXYLinks(vehiclesStruct, matches);
 
