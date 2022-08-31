@@ -1,4 +1,4 @@
-function printAnimate(sumo,vehicle,pedestrian,outputMap)
+function printAnimate(sumo,vehicle,pedestrian,outputMap, xyLinks)
 %PRINTANIMATE This function interpolates the vehicle and pedestrian
 %  positions at first, plots the map in a figure and prints all the mobility
 %  traces overlaid above the map. The mobility traces are update per
@@ -92,6 +92,17 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap)
                     end
                 end
             end
+            
+        end
+            
+        if ~isempty(xyLinks{timeIndex})
+            %plot matches 
+            matchLinks = xyLinks{timeIndex};
+            X1 = matchLinks(:,1)';
+            X2 = matchLinks(:, 3)';
+            Y1 = matchLinks(:, 2)';
+            Y2 = matchLinks(:, 4)';
+            line([X1; X2], [Y1; Y2]) 
         end
         
         if ~isempty(fieldnames(pedestrian))

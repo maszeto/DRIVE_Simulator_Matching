@@ -1,5 +1,5 @@
-function [vehicles,pedestrians] = ...
-            runSUMO(sumo,map,BS,outputMap,distanceTiles,sortedIndexes)
+function [vehicles,pedestrians, xyLinks] = ...
+            runMatching(sumo,map,BS,outputMap,distanceTiles,sortedIndexes)
 %RUNMATCHING This is the main function for the matching scenario. 
 %
 %  Input  :
@@ -15,6 +15,7 @@ function [vehicles,pedestrians] = ...
 %  Output :
 %     vehicles      : Array containing all the information about the
 %                     vehicles for the entire simulation time.
+%     matchSets
 %
 % Copyright (c) 2022, Matthew Szeto
 % email: maszeto@asu.edu
@@ -89,8 +90,8 @@ function [vehicles,pedestrians] = ...
 %     save('matchVars', 'matches', 'matchSets');
     load('matchVars', 'matches', 'matchSets');
     [vehiclesStruct] = addMatches(matches, vehiclesStruct);
-    fprintf("Waiting");
-    
+    xyLinks = getXYLinks(vehiclesStruct, matches);
+
     
     %iterate through timesteps
     %   runMatching()

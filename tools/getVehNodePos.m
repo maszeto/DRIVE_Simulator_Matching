@@ -1,7 +1,12 @@
-function [outputArg1,outputArg2] = getVehNodePos(inputArg1,inputArg2)
-%GETVEHNODEPOS Summary of this function goes here
+function [pos] = getVehNodePos(vid, vehiclesStruct, timeStep)
+%GETVEHNODEPOS Gets a given vehicle Nodes position in the form [x y] for a given
+%timestep
 %   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+    pos = [];
+    idx = find(vehiclesStruct.vehNode(vid).time==timeStep);
+    x = vehiclesStruct.vehNode(vid).x(idx);
+    y = vehiclesStruct.vehNode(vid).y(idx);
+    
+    pos = [pos; x y];
 end
 
