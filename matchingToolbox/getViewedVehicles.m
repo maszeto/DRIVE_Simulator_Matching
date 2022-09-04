@@ -32,11 +32,13 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
     buildingIds = outputMap.buildingIncentre(:,1);
     for i = 1:length(buildingIds)
         building = outputMap.buildings(find(ismember(outputMap.buildings(:,1), buildingIds(i), 'rows')), [2,3]); 
+        %building is of the form YX, so we convert to XY for use in segment
+        %intersection
         buildingsToTest = [ buildingsToTest ;
-            building(1:end-1,1) ...
             building(1:end-1,2) ...
-            building(2:end,1)   ...
-            building(2:end,2) ];
+            building(1:end-1,1) ...
+            building(2:end,2)   ...
+            building(2:end,1) ];
     end
     
     %Vehicles in view is a 2d array, first column is vehicle id, other
