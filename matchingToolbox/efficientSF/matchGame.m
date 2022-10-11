@@ -2,8 +2,9 @@ function [ matchingSet, matchingSetProcessed ] = matchGame( matchingCapacity,uti
 %MATCHINGGAME Summary of this function goes here
 %   Detailed explanation goes here
 
-    [ sortedPL , indexPL ] = sort(utility,2,'descend');
+    [ sortedPL , indexPL ] = sort(utility,2,'descend'); %sorted PL is from the utility function 
     
+    %3d matrix, idk why you need a z axis 
     [ xSize, ySize, zSize ] = size(indexPL);
     for x=1:xSize
         for y=1:ySize
@@ -15,7 +16,7 @@ function [ matchingSet, matchingSetProcessed ] = matchGame( matchingCapacity,uti
         end
     end
 
-
+    %for each timeslot 
     for timeSlot = 1:zSize 
 %         fprintf('The timeslot is: %d\n',timeSlot);
         if ~all(all(sortedPL(:,:,timeSlot)==0))

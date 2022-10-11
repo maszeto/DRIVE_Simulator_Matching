@@ -1,6 +1,6 @@
 function [ a_i,b_i,a_iElements,b_iElements,posToRun ] = findPosToRun( plCap,indexPL,S )
 %FINDPOSTORUN Summary of this function goes here
-%   Detailed explanation goes here
+%   Called in matchGame.m function.and sfPhase 2 function
 
     for j = 1:length(indexPL)
         a_i(j,1) = sum(S(:,1)==j);

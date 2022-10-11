@@ -58,7 +58,7 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
     %Now we need to fill the vehiclesInView array
     for i = 1:length(vehicleTimestep(:,1))
         %set ID
-        vehiclesInView(i,1) = vehicleTimestep(i,1) + 1;
+        vehiclesInView(i,1) = vehicleTimestep(i,1);
         ptr = 1;%Holds position of where last edit was made, since we are filling in arr of zeros
         for j = 1:length(vehicleTimestep(:,1))
             if (vehiclesInRange(i,j) == 1) && (i ~= j) 
@@ -75,7 +75,7 @@ function [vehiclesInView] = getViewedVehicles(sumo, map, outputMap, vehicleTimes
                     ptr = ptr + 1;
                     
                     %add vehicle ID of vehicle in view at positon
-                    vehiclesInView(i, ptr) = vehicleTimestep(j,1) + 1;
+                    vehiclesInView(i, ptr) = vehicleTimestep(j,1);
                 end
 
             end

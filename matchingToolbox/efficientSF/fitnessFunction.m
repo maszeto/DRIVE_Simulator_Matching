@@ -1,6 +1,7 @@
 function [ utility,calcDataRate ] = fitnessFunction(vehicleStruct,linksLOS,closeVehicles,distanceCloseVeh,linkBudget, MCS, utilFuncMode,densityRadius)
 %FITNESSFUNCTION Summary of this function goes here
-%   I think this calculates the utility function? 
+%   I think this calculates the utility function? Not used in any other
+%   function
 
     time = round(0:vehicleStruct.simStep:vehicleStruct.simTime,3);
     for i = 1:length(time)-1

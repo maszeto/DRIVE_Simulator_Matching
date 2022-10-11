@@ -3,9 +3,13 @@ function [pos] = getVehNodePos(vid, vehiclesStruct, timeStep)
 %timestep
 %   Detailed explanation goes here
     pos = [];
-    idx = find(vehiclesStruct.vehNode(vid).time==timeStep);
-    x = vehiclesStruct.vehNode(vid).x(idx);
-    y = vehiclesStruct.vehNode(vid).y(idx);
+    vehicleIdList = [vehiclesStruct.vehNode.id];
+    vehicleIndex = find(vehicleIdList == vid) ;
+    
+    timeIndex = find(vehiclesStruct.vehNode(vehicleIndex).time==timeStep);
+    
+    x = vehiclesStruct.vehNode(vehicleIndex).x(timeIndex);
+    y = vehiclesStruct.vehNode(vehicleIndex).y(timeIndex);
     
     pos = [pos; x y];
 end

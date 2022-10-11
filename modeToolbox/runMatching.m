@@ -43,6 +43,7 @@ function [vehicles,pedestrians, xyLinks] = ...
         vehicleIDs = traci.vehicle.getIDList();
         pedestrianIDs = traci.person.getIDList();
         timeStep = traci.simulation.getTime;
+        fprintf('Preprocessing for t= %f\n',i)
         
         %vehicleTimestep is all the vehicles positions at the current
         %timestep (ID, X, Y, timestep, id)
@@ -77,7 +78,7 @@ function [vehicles,pedestrians, xyLinks] = ...
     matchSets = {};
     plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
     for i = 1:sumo.endTime
-        fprintf('The timestep is: %f\n',i)
+        fprintf('Matching for t= %f\n',i)
         if ~isempty(viewedVehicles{i})
             utilityFunc = @u_nearest;
             [a_iElements, matchSet] = stableFixtures(vehiclesStruct, viewedVehicles, utilityFunc, plCap, i);
@@ -90,7 +91,7 @@ function [vehicles,pedestrians, xyLinks] = ...
     save('matchVars', 'matches', 'matchSets');
 
     %Use below code if you already have data
-%     load('matchVars', 'matches', 'matchSets');
+%     load('matchVars.mat', 'matches', 'matchSets');
     
     
     [vehiclesStruct] = addMatches(matches, vehiclesStruct);

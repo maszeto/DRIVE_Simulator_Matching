@@ -3,8 +3,9 @@ function [PL] = u_nearest(vehiclesStruct, viewedVehicles, timeStep)
 %alone
 %   Detailed explanation goes here
 
-maxRank = length(vehiclesStruct.vehNode);
-PL = zeros(length(vehiclesStruct.vehNode), length(vehiclesStruct.vehNode)); %index corresponds to vehicle ID
+totalVehiclesNum = length(vehiclesStruct.vehNode); % + vehiclesStruct.missingIDs;
+maxRank = totalVehiclesNum;
+PL = zeros(totalVehiclesNum, totalVehiclesNum); %index corresponds to vehicleIndex
 
 %We can use viewedVehicles to get candidates for the matching game, then
 %rank them based on distance from vehiclesStruct
@@ -37,9 +38,12 @@ for i=1:length(curViewedVehicles(:,1))
         curDist = sortrows(curDist, 2, 'ascend');
     end
     %Fill in PL accordingly
+    vehicleIdList = [vehiclesStruct.vehNode.id];
+    vehicleIndex = find(vehicleIdList == curVid) ; 
     if ~isempty(curDist)
         for k = 1:length(curDist(:,1))
-            PL(curVid, curDist(k,1)) = maxRank - k + 1;        
+            vehicleIndex2 = find(vehicleIdList == curDist(k,1));
+            PL(vehicleIndex, vehicleIndex2) = maxRank - k + 1;        
         end
     end
     

@@ -3,7 +3,7 @@
 
 clear; clc ;
 
-% Looks like this defines the preference list and preference list cap for
+% Looks like this defines the preference list and preference list capacity for
 % 10 vehicle vehicles
 %     STABLE MATCHING EXISTS
 %     1  2  3  4  5  6  7  8  9 10 
@@ -19,6 +19,8 @@ PL = [ 0  9 10  8  7  0  6  5  0  4 ;...
       10  0  7  0  9  0  8  0  0  0 ];
 plCap = [ 2 ; 2 ; 2 ; 2 ; 2 ; 2 ; 1 ; 1 ; 1 ; 1 ];
 
+PL = zeros(198,198);
+plCap = ones(198,1);
 
 %     STABLE MATCHING EXISTS
 %      1  2  3  4  5  6     
@@ -52,12 +54,13 @@ plCap = [ 2 ; 2 ; 2 ; 2 ; 2 ; 2 ; 1 ; 1 ; 1 ; 1 ];
 %        3  5  0  6  4  2 ];
 % plCap = [ 1 ; 1 ; 1 ; 1 ; 1 ; 1 ];
 
-% Sorts preference lists in descending order across second dimension, this
-% is the vehicle ranking the other vehicles but the PL should be generated
-% from the fitness function so idk wtf this about
-[ sortedPL , indexPL ] = sort(PL,2,'descend');
+% Sorts PL rows in descending order. 
+[ sortedPL , indexPL ] = sort(PL,2,'descend'); %Sorted PL is the utility fucntion output 
+%SortedPL is the preference value of each vehicle sorted
+%IndexPL is the sorted order of which vehicle index each vehicle prefers 
 
-%loop fills indexPL with 0 if sorted PL is also 0
+%loop fills indexPL with 0 if sorted PL is also 0, bc that is the vehicle's
+%ranking of itself
 for i=1:length(indexPL)
     for j=1:length(indexPL)
         if sortedPL(i,j)==0
@@ -66,15 +69,15 @@ for i=1:length(indexPL)
     end
 end
 
-
+%a_iElements holds the matches for each vehicle at index i
 for i=1:length(sortedPL)
     a_iElements{i} = {};
     b_iElements{i} = {};
 end
-a_i = zeros(length(sortedPL),1); %Gives you some zeroes
+a_i = zeros(length(sortedPL),1); %Gives you a col of length(veh) of zeros
 S = [ 0 0 ];
-posToRun = find(a_i<plCap);
-posToRun = posToRun'; %Just gives you a 1x10 
+posToRun = find(a_i<plCap);%So a_i holds the number of matches for each index
+posToRun = posToRun'; %Just gives you a 1x(numveh), list of increasing numbers from 1-numVeh 
 
 while ~isempty(posToRun)
     [ sortedPL,a_i,plCap,S,indexPL,a_iElements,b_iElements ] = sfPhase1( posToRun,sortedPL,a_i,plCap,S,indexPL,a_iElements,b_iElements );
@@ -84,7 +87,7 @@ end
 
 S = S(2:end,:);
 if ~isempty(S)
-    S = sortrows(S,1);
+    S = sortrows(S,1);%S contains a mapping of all pairs from a_iElements, i.e. x1 is matched to y1
 end
 
 

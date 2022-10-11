@@ -8,11 +8,13 @@ function [xyLinks] = getXYLinks(vehiclesStruct, matches)
     for timeStep=1:length(matches)
         xyLinksCur = [];
         if ~isempty(matches{timeStep})
-            for vid=1:length(matches{timeStep})
-                if ~isempty(matches{timeStep}{vid})
-                    for matchIdx=1:length(matches{timeStep}{vid})
+            for vehicleIndex=1:length(matches{timeStep})
+                if ~isempty(matches{timeStep}{vehicleIndex})
+                    for matchIdx=1:length(matches{timeStep}{vehicleIndex})
+                        vid = vehiclesStruct.vehNode(vehicleIndex).id;
+                        matchedVid = vehiclesStruct.vehNode(matches{timeStep}{vehicleIndex}(matchIdx)).id;
                         xyLinksCur = [xyLinksCur; getVehNodePos(vid, vehiclesStruct, timeStep) ...
-                            getVehNodePos(matches{timeStep}{vid}(matchIdx), vehiclesStruct, timeStep)] ;
+                            getVehNodePos(matchedVid, vehiclesStruct, timeStep)] ;
                     end
                     
                 end

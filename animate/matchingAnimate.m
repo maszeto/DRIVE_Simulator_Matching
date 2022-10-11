@@ -82,14 +82,14 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap, xyLinks)
         set(ht,'String',cat(2,'Time (sec) = ',num2str(t,4)));
         if ~isempty(fieldnames(vehicle))
             for nodeIndex = 1:length(vehicle.vehNode)
-                
+                vid = vehicle.vehNode(nodeIndex).id;
                 set(vNodePos(nodeIndex),'XData',vNode(nodeIndex).v_x(timeIndex),'YData',vNode(nodeIndex).v_y(timeIndex));
                 
                 if MATCHING.verboseMap == 1
                     if (exist('vehLabels','var') == 0)
-                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));
+                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(vid));
                     elseif (length(vehLabels) < nodeIndex)
-                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(nodeIndex));   
+                        vehLabels(nodeIndex) = text(vNode(nodeIndex).v_x(timeIndex),vNode(nodeIndex).v_y(timeIndex),int2str(vid));   
                     else
                         set(vehLabels(nodeIndex),'Position',[vNode(nodeIndex).v_x(timeIndex), vNode(nodeIndex).v_y(timeIndex), 0]);
                     end

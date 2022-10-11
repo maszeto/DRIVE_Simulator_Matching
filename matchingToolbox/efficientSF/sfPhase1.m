@@ -15,7 +15,7 @@ function [ sortedPL,a_i,plCap,S,indexPL,a_iElements,b_iElements ] = sfPhase1( po
 %   posToRun             : Which vehicle (player) we are evaluating
 %   sortedPL             : Sorted PL of all players in the matching game
 %   a_i                  : 
-%   plCap                :
+%   plCap                : Capacity for each vehicle
 %   S                    :
 %   indexPL              : 
 %   a_iElements          :
