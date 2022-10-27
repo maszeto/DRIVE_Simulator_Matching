@@ -14,6 +14,8 @@ classdef MatchingSim
         timesteps           % Timesteps of simulation
         mode                % Matching with 'V2V' or 'V2I'
         rsuList             % List of RSU objects in simulation
+        outputMap           % Map struct containing map data like building information
+        buildingLines    % line segments creating buildings
         
     end
     
@@ -61,15 +63,43 @@ classdef MatchingSim
             
         end
         
-        function obj = createRSUConnectionSchedule(obj)
+        function obj = createRSUConnectionScheduleNearest(obj)
             %MATCHINGSIM Create the matching schedule for each vehicle
             %object
             %   Detailed explanation goes here
+            if isempty(obj.outputMap)
+                fprintf("ERROR: Set output map before creating RSU connection schedule\n")
+            end
+            
+            obj = obj.setBuildingLines();
+
             for i = 1:obj.numVehicles
-                obj.vehiclesByIndex(i) = obj.vehiclesByIndex(i).createRSUConnectionSchedule(obj.rsuList);
+                obj.vehiclesByIndex(i) = obj.vehiclesByIndex(i).createRSUConnectionScheduleNearest(obj.rsuList, obj.buildingLines);
             end
         end
         
+        function obj = setBuildingLines(obj)
+            
+            if isempty(obj.outputMap)
+                fprintf("ERROR: Set output map before setting building lines\n")
+            end
+            buildingsToTest = [];
+            buildingIds = obj.outputMap.buildingIncentre(:,1);
+            
+            for i = 1:length(buildingIds)
+                building = obj.outputMap.buildings(find(ismember(obj.outputMap.buildings(:,1), buildingIds(i), 'rows')), [2,3]); 
+                %building is of the form YX, so we convert to XY for use in segment
+                %intersection
+                buildingsToTest = [ buildingsToTest ;
+                    building(1:end-1,2) ...
+                    building(1:end-1,1) ...
+                    building(2:end,2)   ...
+                    building(2:end,1) ];
+            end
+
+            obj.buildingLines = buildingsToTest;
+        end
+
         function obj = createXYLinksV2I(obj)
             %MATCHINGSIM get xyLinks
             %object
@@ -81,8 +111,10 @@ classdef MatchingSim
                         simVeh = obj.getVehicleByID(obj.vehicleIDsByTime{timeStep}(i));
                         if ~isempty(simVeh)
                             matchedRSUID = simVeh.getRSUIDAtTime(timeStep);
-                            rsu = obj.rsuList(matchedRSUID);
-                            xyLinksCur = [xyLinksCur; rsu.x, rsu.y, simVeh.getXPosAtTime(timeStep), simVeh.getYPosAtTime(timeStep)] ;
+                            if(matchedRSUID ~= -1)
+                                rsu = obj.rsuList(matchedRSUID);
+                                xyLinksCur = [xyLinksCur; rsu.x, rsu.y, simVeh.getXPosAtTime(timeStep), simVeh.getYPosAtTime(timeStep)] ;
+                            end
                         end
                     end
                 end

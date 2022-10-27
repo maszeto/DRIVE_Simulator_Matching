@@ -40,17 +40,17 @@ classdef SimVehicle
             
         end
         
-        function obj = createRSUConnectionSchedule(obj,rsuList)
+        function obj = createRSUConnectionScheduleNearest(obj,rsuList, buildingLines)
             RSUs = length(obj.times);
             for i = 1:length(obj.times)
                 %For each timestep 
-                RSUs(i) = obj.findNearestRSU(i, rsuList);
+                RSUs(i) = obj.findNearestRSUInLOS(i, rsuList, buildingLines);
             end
             obj.RSUs = RSUs;
         end
         
-        function nearestRSUIndex = findNearestRSU(obj, timeIndex, rsuList)
-            nearestRSUIndex = 1;
+        function nearestRSUIndex = findNearestRSUInLOS(obj, timeIndex, rsuList, buildingLines)
+            nearestRSUIndex = -1;
             distanceToClosestRSU = 9999;
             for i = 1:length(rsuList)               
                 x1 = obj.x(timeIndex);
@@ -58,11 +58,12 @@ classdef SimVehicle
                 x2 = rsuList(i).x;
                 y2 = rsuList(i).y;
                 distance = abs(pdist([x1,y1;x2,y2], 'euclidean'));
-                if distance < distanceToClosestRSU
+                if distance < distanceToClosestRSU && hasLOS(x1, y1, x2, y2, buildingLines)
                     nearestRSUIndex = i;
                     distanceToClosestRSU = distance;
                 end
             end
+            
             
         end
         

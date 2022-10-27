@@ -102,7 +102,8 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
     matchingSim.vehicleIDsByTime = vehiclesIDsAtTime;
     matchingSim = matchingSim.addRSUs(potentialPos);
     
-    matchingSim = matchingSim.createRSUConnectionSchedule();
+    matchingSim.outputMap = outputMap;
+    matchingSim = matchingSim.createRSUConnectionScheduleNearest();
     outputMap.RSUs = matchingSim.rsuList;
     matchingSim = matchingSim.createXYLinksV2I();
     xyLinks = matchingSim.xyLinks;
