@@ -15,10 +15,10 @@ VERBOSELEVEL = 1; % Use 0 to print nothing, 1 to print some
 %% Simulator Settings              
 global SIMULATOR 
 %SIMULATOR.scenario = 'sumo'; % four scenarios provided, i.e., 'v2v',
-%'sumo', 'osm', 'matching'
+%'sumo', 'osm', 'matching', 'v2i'
 %adding new scenario, called matching, to test assosciation between
 %vehicles
-SIMULATOR.scenario = 'matching';
+SIMULATOR.scenario = 'v2i';
 SIMULATOR.bsPlacement = 'random'; % three options provied, i.e., 'ga', 'random', 'greedy'
 SIMULATOR.parallelRun = 1;
 SIMULATOR.parallelWorkers = 2;
@@ -27,7 +27,7 @@ SIMULATOR.map = 1; % give 0 to parse an OSM map, 1 to parse map from SUMO
 SIMULATOR.load = 2; % Choose if the preprocessed files will be loaded - 0 process from scratch, 1 ask user, 2 load all (if existing)
 SIMULATOR.pathPreprocessed = './mobilityFiles/preprocessedFiles';
 SIMULATOR.gaSeed = 5; % The seed to be used for the Genetic Algorithm (for the BS placement)
-SIMULATOR.randomToChoose = 1; % The number of random basestations to be chosen (when using the random BS placement function)
+SIMULATOR.randomToChoose = 100; % The number of random basestations to be chosen (when using the random BS placement function)
 
 %% SUMO Settings
 sumo.routeFile = './mobilityFiles/sumoFiles/londonSmall/londonSmall.sumocfg';
@@ -43,6 +43,7 @@ MATCHING.interactive = 0; %Run interactive simulation (requires user input) 0 or
 MATCHING.lidarRad = 200; %LiDAR viewing radius in meters
 MATCHING.verboseMap = 1; %Controls printing of v2vLinks, vehicleIDs, and BuildingIDs 0 or 1
 MATCHING.beamSelSim = 0; %Run beam selection simulation 
+MATCHING.name = "MatchingTest";
 
 %% Lookup Tables Vehicles Types
 sumo.vehicleTypes= {'Ambulance';'Passenger'};
@@ -54,7 +55,7 @@ map.simplificationTolerance = 10;
 map.edgeTolerance = 100;
 map.tileSize = 16; % for square tiles: length of side - for hexagons: length of short diagonal
 map.tileShape = 2; % give 1 for hexagon and 2 for square
-map.area = 100; % give the size of the map tiles to be processed or give 0
+map.area = 25; % give the size of the map tiles to be processed or give 0
                  % to be ignored  --- for square areas: length of side - for 
                  % hexagons: length of short diagonal
 map.areaShape = 2; % give 1 for hexagon and 2 for square

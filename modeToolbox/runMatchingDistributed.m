@@ -1,5 +1,5 @@
 function [vehicles,pedestrians, xyLinks] = ...
-            runMatching(sumo,map,BS,outputMap,distanceTiles,sortedIndexes)
+            runMatchingDistributed(sumo,map,BS,outputMap,distanceTiles,sortedIndexes)
 %RUNMATCHING This is the main function for the matching scenario. 
 %
 %  Input  :
@@ -35,6 +35,8 @@ function [vehicles,pedestrians, xyLinks] = ...
     
     %Holds vehicles in view at every timestep
     viewedVehicles = {};
+    
+    matchingSim = MatchingSim(MATCHING.name);
     
     % Start iterating for all the timesteps, not the most effecient but
     % good enough for now
@@ -72,8 +74,13 @@ function [vehicles,pedestrians, xyLinks] = ...
     %to which vehicles are in view
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
+    matchingSim = matchingSim.addVehiclesByStruct(vehiclesStruct);
+    matchingSim = matchingSim.setVehicleIDsByTime(viewedVehicles);
     %Run Matching, Use the following block of code or load your own
     fprintf("Running Stable Fixtures Matching ...\n");
+    
+    matchingSim = matchingSim.runMatching("SF", @u_nearest);
+    
     matches = {};
     matchSets = {};
     plCap = 2 * ones(length(vehiclesStruct.vehNode),1);
@@ -91,7 +98,7 @@ function [vehicles,pedestrians, xyLinks] = ...
     save('matchVars', 'matches', 'matchSets');
 
     %Use below code if you already have data
-%     load('matchVars_londonSmall_u_nearest.mat', 'matches', 'matchSets');
+%     load('matchVars.mat', 'matches', 'matchSets');
     
     
     [vehiclesStruct] = addMatches(matches, vehiclesStruct);

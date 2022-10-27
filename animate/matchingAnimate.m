@@ -43,7 +43,7 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap, xyLinks)
     pNodePos = generateLineObjects(pNode,pedestrian);
     
     % The information of the matlab figure
-    title('V2V mmWave Simulation')
+    title('V2X mmWave Simulation')
     xlabel('X (meters)');
     ylabel('Y (meters)');
     axlim = get(gca, 'XLim');    % Get XLim Vector
@@ -65,6 +65,17 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap, xyLinks)
             %label buildings, 3rd column is x and 2nd column is y for some
             %reason
             text(outputMap.buildingIncentre(i,3),outputMap.buildingIncentre(i,2),int2str(outputMap.buildingIncentre(i,1)));
+        end
+    end
+    
+    %Plot the RSUs
+    if MATCHING.verboseMap == 1 && SIMULATOR.scenario == "v2i"
+        for i = 1:length(outputMap.RSUs)
+            %label buildings, 3rd column is x and 2nd column is y for some
+            %reason
+            text(outputMap.RSUs(i).x,outputMap.RSUs(i).y,int2str(outputMap.RSUs(i).id));
+            plot(outputMap.RSUs(i).x,outputMap.RSUs(i).y,...
+                'o','color',[0 0 0],'MarkerSize',20,'LineWidth',3);
         end
     end
     

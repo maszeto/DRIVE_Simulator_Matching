@@ -60,8 +60,10 @@ function runMain( map, sumo, BS, linkBudget )
         [ vehicles, pedestrians ] = runSUMO(sumo,map,BS,outputMap,potentialBSPos,chosenRSUpos, tilesCovered,distancePerRAT,sortedIndexesPerRat,losNlosStatusPerRAT,initialRssAll, distanceBuildings, sortedIndexesBuildings, rssBuildings);
     elseif strcmp(SIMULATOR.scenario,'v2v')
         [ vehicles, pedestrians ] = runV2V(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
+    elseif strcmp(SIMULATOR.scenario,'v2i')
+        [ vehicles, pedestrians, outputMap, xyLinks ] = runV2I(sumo,map,BS,outputMap,potentialBSPos,chosenRSUpos, tilesCovered,distancePerRAT,sortedIndexesPerRat,losNlosStatusPerRAT,initialRssAll, distanceBuildings, sortedIndexesBuildings, rssBuildings);
     elseif strcmp(SIMULATOR.scenario, 'matching')
-        [ vehicles, pedestrians, xyLinks ] = runMatching(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile);
+        [ vehicles, pedestrians, xyLinks ] = runMatchingDistributed(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile);
     
     else
         fprintf('Wrong scenario name. Please check the chosen scenario in simSettings.m file.\n')
@@ -70,7 +72,7 @@ function runMain( map, sumo, BS, linkBudget )
     
     [ vehiclesStruct, pedestriansStruct ] = parseMobility(sumo, vehicles, pedestrians);
     
-    if strcmp(SIMULATOR.scenario, 'matching')
+    if strcmp(SIMULATOR.scenario, 'matching') || strcmp(SIMULATOR.scenario, 'v2i')
         matchingAnimate(sumo,vehiclesStruct,pedestriansStruct,outputMap, xyLinks)
     else
         printAnimate(sumo,vehiclesStruct,pedestriansStruct,outputMap)

@@ -36,7 +36,7 @@ function [ vehicleStruct, pedestrianStruct ] = parseMobility( sumo, vehicle, ped
     missingIDs = [];
     
     for nodeIndexTmp = 1:length(uniqueVehicleIDs)
-        vArrayTmp = find(vehicle(:,1) == nodeIndexTmp-1);
+        vArrayTmp = find(vehicle(:,1) == nodeIndexTmp - 1);
         
         if ~isempty(vArrayTmp)
             
@@ -48,7 +48,7 @@ function [ vehicleStruct, pedestrianStruct ] = parseMobility( sumo, vehicle, ped
                 'vehicleType', vehicle(vArrayTmp(1),5));
         else
             emptyCounter = emptyCounter + 1;
-            missingIDs = [ missingIDs nodeIndexTmp-1 ];
+            missingIDs = [ missingIDs nodeIndexTmp - 1];
         end
     end
     

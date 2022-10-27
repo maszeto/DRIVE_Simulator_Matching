@@ -1,23 +1,22 @@
-function [PL] = u_nearest(vehiclesStruct, viewedVehicles, timeStep)
-%U_NEAREST Matching utility function which ranks vehicles based on distance
-%alone
-%   Outputs a PL, which ranks vehicles based on their index in
-%   vehiclesStruct.vehNode
-totalVehiclesNum = length(vehiclesStruct.vehNode); % + vehiclesStruct.missingIDs;
-maxRank = totalVehiclesNum;
-PL = zeros(totalVehiclesNum, totalVehiclesNum); %index corresponds to vehicleIndex
+function [PL] = u_efficient(vehiclesStruct, viewedVehicles, timeStep)
+%U_EFFECIENT The utility function used in "Effecient V2V Communication
+%Scheme"
+%   Detailed explanation goes here
 
-%We can use viewedVehicles to get candidates for the matching game, then
-%rank them based on distance from vehiclesStruct
+totalVehiclesNum = length(vehiclesStruct.vehNode);
+maxRank = totalVehiclesNum;
+PL = zeros(totalVehiclesNum, totalVehiclesNum);
 
 curViewedVehicles = viewedVehicles{timeStep};
 
-
-%for each vehicle in this timestep
 for i=1:length(curViewedVehicles(:,1))
     
     curVid = curViewedVehicles(i,1);%get vehicle id
-    curDist = [];
+    vehicleIdList = [vehiclesStruct.vehNode.id];
+    vehicleIndex = find(vehicleIdList == curVid) ; 
+    curVehicleIndex = 2;
+    
+    
     j = 2; %second index to iterate through vehicles which are in view
     
     while curViewedVehicles(i, j) ~= 0
@@ -37,9 +36,7 @@ for i=1:length(curViewedVehicles(:,1))
     if ~isempty(curDist)
         curDist = sortrows(curDist, 2, 'ascend');
     end
-    %Fill in PL accordingly
-    vehicleIdList = [vehiclesStruct.vehNode.id];
-    vehicleIndex = find(vehicleIdList == curVid) ; 
+
     if ~isempty(curDist)
         for k = 1:length(curDist(:,1))
             vehicleIndex2 = find(vehicleIdList == curDist(k,1));
@@ -49,6 +46,7 @@ for i=1:length(curViewedVehicles(:,1))
     
     
 end
+
 
 end
 
