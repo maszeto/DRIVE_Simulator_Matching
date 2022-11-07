@@ -71,6 +71,8 @@ function outputMap = loadMap( map, sumo )
             outputMap = parseOSM(map);
         elseif SIMULATOR.map == 1
             outputMap = parseSUMOMap(map,sumo);
+        elseif SIMULATOR.map == 2
+            outputMap = parseSUMOMapRoads(map, sumo);
         end
         
         % save the processed map

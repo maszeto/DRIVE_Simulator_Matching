@@ -15,7 +15,7 @@ function outputMap = parseOSM( map )
 
     tic
     % Parse Openstreetmap file and create Matlab structure
-    [ parsedOSM, ~ ] = parse_openstreetmap(map.fileCorrectName);
+    [ parsedOSM, ~ ] = parse_openstreetmap(map.file);
 
     % Parse buildings, foliage and the roads from structure
     [ buildings, foliage, roadsLine, trafficLights ] = plot_way(axes,parsedOSM);

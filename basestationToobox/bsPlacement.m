@@ -55,6 +55,15 @@ function [ chosenBSpos,tilesCovered,highestRSS ] = bsPlacement(map,outputMap,BS,
                     toSave = 'random';
                     [ chosenBSpos.(ratName),tilesCovered.(ratName),highestRSS.(ratName) ] =...
                         randomChosen(BS,potentialBSPos,losIDs,nLosIDs,rssAll,outputMap,sortedIndexes,losNlos,ratName);
+                elseif strcmp(SIMULATOR.bsPlacement,'userdef') 
+                    toSave = 'userdef';
+                    ratPos = find(strcmp(ratName,BS.rats)==1);
+                    [ noOfBSs, ~ ] = size(potentialBSPos.(ratName).pos);
+                    chosenBSpos.(ratName) = [1:noOfBSs]';
+                    tilesCovered.(ratName) = tilesNumCovered(chosenBSpos.(ratName),losIDs{ratPos},nLosIDs{ratPos});
+                    [ ~,highestRSS.(ratName),~,~,~,~ ]  = highestRSSValues(chosenBSpos.(ratName),outputMap,sortedIndexes{ratPos}, rssAll{ratPos},losNlos{ratPos});
+                    
+                
                 else
                     disp('Wrong Basestation Placement algorithm was given. Please provide a correct name!')
                     error('Wrong Basestation Placement algorithm.');

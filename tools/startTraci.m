@@ -15,7 +15,7 @@ function startTraci( sumo )
     global SIMULATOR 
     
     % Run only when SUMO map is requested by the user
-    if SIMULATOR.map == 1
+    if SIMULATOR.map == 1 || SIMULATOR.map == 2
         % Add SUMO path in the MATLAB path
         pathVar = getenv('PATH');
         if ~contains(pathVar,SIMULATOR.sumoPath)
@@ -49,7 +49,7 @@ function startTraci( sumo )
         if traciVersion
             verbose('TraCI was initiated correctly and was connected with SUMO.')
         end
-        
+   
     elseif SIMULATOR.map == 0
         verbose('SUMO will not be initiated. Only an OSM map will be used from the simulation framework.')
     else

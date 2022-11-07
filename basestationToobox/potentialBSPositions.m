@@ -58,6 +58,10 @@ function potentialPos = potentialBSPositions(outputMap, BS, map, linkBudget)
             if strcmp(BS.(BS.rats{i}).ratType,'femto')
                 if SIMULATOR.map == 0
                     potentialPos.(BS.rats{i}).pos = osmFemtoPositions( outputMap, BS, map, BS.rats{i} );
+                elseif strcmp(SIMULATOR.bsPlacement,'userdef')
+                    load("bsPosFromFile.mat", "bsPosFromFile");
+                    potentialPos.(BS.rats{i}).pos = bsPosFromFile;
+                    
                 elseif SIMULATOR.map == 1
                     potentialPos.(BS.rats{i}).pos = sumoFemtoPositions( outputMap, BS, map, BS.rats{i} );
                 end

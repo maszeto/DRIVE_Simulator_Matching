@@ -19,7 +19,7 @@ global SIMULATOR
 %adding new scenario, called matching, to test assosciation between
 %vehicles
 SIMULATOR.scenario = 'v2i';
-SIMULATOR.bsPlacement = 'random'; % three options provied, i.e., 'ga', 'random', 'greedy'
+SIMULATOR.bsPlacement = 'userdef'; % four options provied, i.e., 'ga', 'random', 'greedy', 'userdef'
 SIMULATOR.parallelRun = 1;
 SIMULATOR.parallelWorkers = 2;
 SIMULATOR.sumoPath = '/usr/local/bin';
@@ -27,7 +27,7 @@ SIMULATOR.map = 1; % give 0 to parse an OSM map, 1 to parse map from SUMO
 SIMULATOR.load = 2; % Choose if the preprocessed files will be loaded - 0 process from scratch, 1 ask user, 2 load all (if existing)
 SIMULATOR.pathPreprocessed = './mobilityFiles/preprocessedFiles';
 SIMULATOR.gaSeed = 5; % The seed to be used for the Genetic Algorithm (for the BS placement)
-SIMULATOR.randomToChoose = 100; % The number of random basestations to be chosen (when using the random BS placement function)
+SIMULATOR.randomToChoose = 20; % The number of random basestations to be chosen (when using the random BS placement function)
 
 %% SUMO Settings
 sumo.routeFile = './mobilityFiles/sumoFiles/tenWest/tenWest.sumocfg';

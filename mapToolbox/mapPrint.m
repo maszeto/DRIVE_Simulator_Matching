@@ -64,7 +64,7 @@ function mapPrint( outputMap, potRSUPos )
         set(get(get(obj,'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
         hold on;
     end
-%     mapshow(roadsLineNew(:,3),roadsLineNew(:,2),'DisplayType','line','LineStyle','-') % plot the map parsed from SUMO network file
+     %mapshow(roadsLineNew(:,3),roadsLineNew(:,2),'DisplayType','line','LineStyle','-') % plot the map parsed from SUMO network file
     hold on
     if ~isempty(outputMap.foliageAnimation)
         obj = mapshow(foliageNew(:,3),foliageNew(:,2),'DisplayType','polygon','FaceColor',[0 1 0],'LineStyle','none'); % plot the map parsed from SUMO network file
