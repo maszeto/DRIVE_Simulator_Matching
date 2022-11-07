@@ -15,10 +15,11 @@ classdef SimVehicle
         RSUs                % RSU Chosen (list of RSU objects) indexed by timeIndex
         vehicleId           % Vehicle ID given by Traci, must be 1 or greater
         vehicleIndex        % Vehicle Index in the list of vehicles from Traci
-        vehicleType         % Type of vehicle
+        vehicleType         % Type of vehicle, index in list of vehicle types
         vehicleRadius       % Radius in which vehicle can see others
         matchingCandidates  % List of SimVehicle Objects indexed by timeIndex
-        
+        route               % Line segments which make up the route
+        routePlan           % Projected route based on plan 
     end
     
     methods
@@ -37,6 +38,20 @@ classdef SimVehicle
             obj.x = vehiclesStruct.vehNode(vehicleIndex).x;
             obj.y = vehiclesStruct.vehNode(vehicleIndex).y;
             obj.vehiclesInView = vehiclesStruct.vehNode(vehicleIndex).inView;
+            
+        end
+        
+        function obj = createRoute(obj)
+            %Using the data points provided from the actual route create
+            %route (x & y line segments), with distance
+            [x1, y1] = reducem(obj.x, obj.y,1);
+            distance = hypot(diff(x1), diff(y1));
+            distanceTraveled = [0; cumsum(distance)];
+            obj.route = [x1,y1,distanceTraveled];
+        end
+        
+        function obj = createRoutePlan(obj)
+            obj = obj.createRoute();
             
         end
         
@@ -64,6 +79,8 @@ classdef SimVehicle
                 end
             end
             
+            %Think you could also do something like this > [[matchingSim.rsuList.x]' [matchingSim.rsuList.y]']
+            
             
         end
         
@@ -83,6 +100,7 @@ classdef SimVehicle
         
         
         function obj = runMatchingAtTime(obj, timeStep, algorithm, utilityFunction)
+            fprintf("Matching at t=%d for vehicle %d\n", timeStep, obj.vehicleId);
         end
         
         function xPos = getXPosAtTime(obj, timeStep)

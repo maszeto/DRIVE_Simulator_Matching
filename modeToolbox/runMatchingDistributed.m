@@ -36,7 +36,7 @@ function [vehicles,pedestrians, xyLinks] = ...
     %Holds vehicles in view at every timestep
     viewedVehicles = {};
     
-    matchingSim = MatchingSim(MATCHING.name);
+    matchingSim = MatchingSim(MATCHING.name, "v2v");
     
     % Start iterating for all the timesteps, not the most effecient but
     % good enough for now

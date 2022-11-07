@@ -24,7 +24,7 @@ function outputMap = parseSUMOMap( map, sumo )
     polygonIDs = traci.polygon.getIDList();
     for i = 1:length(polygonIDs)
         polygonType{i} = traci.polygon.getType(polygonIDs{i});
-        if strcmp(polygonType{i},'building')
+        if strcmp(polygonType{i},'building') || strcmp(polygonType{i},'building.yes')
             buildings = polygonAddition(buildings,polygonIDs{i},i);
         elseif strcmp(polygonType{i},'forest') || strcmp(polygonType{i},'natural')
             foliage = polygonAddition(foliage,polygonIDs{i},i);
@@ -110,14 +110,16 @@ function outputMap = parseSUMOMap( map, sumo )
         minY = min(min(buildings(:,3)),min(foliage(:,3)));
         maxX = max(max(buildings(:,2)),max(foliage(:,2)));
         maxY = max(max(buildings(:,3)),max(foliage(:,3)));
+        bounds = [ minX, maxX ; minY, maxY ];
     else
         minX = min(buildings(:,2));
         minY = min(buildings(:,3));
         maxX = max(buildings(:,2));
         maxY = max(buildings(:,3));
+        bounds = [ minX, maxX ; minY, maxY ];
     end
     
-    bounds = [ minX, maxX ; minY, maxY ];
+    
     
     outputMap.bbox = bounds;
 

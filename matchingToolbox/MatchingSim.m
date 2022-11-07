@@ -15,7 +15,9 @@ classdef MatchingSim
         mode                % Matching with 'V2V' or 'V2I'
         rsuList             % List of RSU objects in simulation
         outputMap           % Map struct containing map data like building information
-        buildingLines    % line segments creating buildings
+        buildingLines       % line segments creating buildings
+        losIDs              % Which tiles have LOS, index is tile ID
+        nLosIDs             % Which tiles don't have LOS, index is tile ID
         
     end
     
@@ -60,6 +62,48 @@ classdef MatchingSim
                     potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3));
             end
             obj.rsuList = rsuList;
+            
+        end
+        
+        function obj = calculateTileLOS(obj, BS, ratName)
+            if isempty(obj.outputMap)
+                fprintf("ERROR: Set output map before calculating tile LOS\n")
+            end
+            [losIDs, nLosIDs, ~, ~, ~] = losNLosV2V(obj.outputMap,BS,ratName);
+            obj.losIDs = losIDs;
+            obj.nLosIDs = nLosIDs;   
+        end
+            
+        function tileID = getVehicleTile(obj, vehicleID, timeStep)
+            % Get the tileID of the current tile the vehicle is closest to
+            vehiclePos = [obj.getVehicleByID(vehicleID).getXPosAtTime(timeStep) ...
+                            obj.getVehicleByID(vehicleID).getYPosAtTime(timeStep)];
+            tileCenters = obj.outputMap.inCentresTile(:,1:2);
+            nearestTileIndex = dsearchn(tileCenters, vehiclePos);
+            tileID = nearestTileIndex;
+        end
+        
+        function hasLOS = hasLOS(obj, x1, y1, x2, y2, timeStep, fastCalculation)
+            %Check if there is LOS between two points at a given timestep
+            %Should be two methods, one for speed one for raw calculation 
+            %TODO: Add vehicles 
+            if(fastCalculation == 0)
+                intersectCnt = segments_intersect_test([x1,y1,x2,y2], obj.buildingLines);%number of intersections
+                hasLOS = (intersectCnt == 0);
+            else
+                if(isempty(obj.losIDs) || isempty(obj.nLosIDs))
+                    fprintf("ERROR: Call calculateTileLOS before hasLOS\n")
+                end
+                pos1 = [x1 y1];
+                pos2 = [x2 y2];
+                tileCenters = obj.outputMap.inCentresTile(:,1:2);
+                nearestTileIndex1 = dsearchn(tileCenters, pos1);
+                nearestTileIndex2 = dsearchn(tileCenters, pos2);
+                
+                hasLOS = ~isempty(find(obj.losIDs{nearestTileIndex1} == nearestTileIndex2));
+                
+            end
+            
             
         end
         
@@ -174,11 +218,15 @@ classdef MatchingSim
         end
         
         function obj = runMatching(obj, algorithm, utilityFunction)
-            for i = 1:length(obj.timesteps)
+            loadingBar = waitbar(0, "Running matching");
+            runTime = length(obj.timesteps);
+            for i = 1:runTime
+                
                 fprintf('Matching for t= %f\n',i);
                 if ~isempty(obj.getVehicleIDsAtTime(i))
                     obj = obj.runMatchingAtTime(i, algorithm, utilityFunction);
                 end
+                waitbar(i/runTime, loadingBar, sprintf('Progress: %d %%', floor(i/runTime*100)));
             end
         end
         

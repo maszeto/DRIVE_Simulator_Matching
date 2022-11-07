@@ -30,7 +30,7 @@ SIMULATOR.gaSeed = 5; % The seed to be used for the Genetic Algorithm (for the B
 SIMULATOR.randomToChoose = 100; % The number of random basestations to be chosen (when using the random BS placement function)
 
 %% SUMO Settings
-sumo.routeFile = './mobilityFiles/sumoFiles/londonSmall/londonSmall.sumocfg';
+sumo.routeFile = './mobilityFiles/sumoFiles/tenWest/tenWest.sumocfg';
 sumo.maxVehicleNumber = 200; % maximum number of vehicles per timestep - set to zero if all vehicles are to be considered
 sumo.startTime = 0;
 sumo.endTime = 200;
@@ -46,11 +46,13 @@ MATCHING.beamSelSim = 0; %Run beam selection simulation
 MATCHING.name = "MatchingTest";
 
 %% Lookup Tables Vehicles Types
-sumo.vehicleTypes= {'Ambulance';'Passenger'};
-sumo.vehicleTypeAbbreviation= {'amb' ; 'pas'};
+% sumo.vehicleTypes= {'Ambulance';'Passenger'};
+% sumo.vehicleTypeAbbreviation= {'amb' ; 'pas'};
+sumo.vehicleTypes= {'car'};
+sumo.vehicleTypeAbbreviation= {'car'};
 
 %% Map Settings1
-map.file = './mobilityFiles/sumoFiles/londonSmall/londonSmall.osm.xml'; % manhattanLarge - londonSmall - smartJunction
+map.file = './mobilityFiles/sumoFiles/tenWest/tenWest.osm.xml'; % manhattanLarge - londonSmall - smartJunction
 map.simplificationTolerance = 10;
 map.edgeTolerance = 100;
 map.tileSize = 16; % for square tiles: length of side - for hexagons: length of short diagonal

@@ -11,6 +11,10 @@ function buildings = add3rdDimension(buildings)
 % Copyright (c) 2019-2020, Ioannis Mavromatis
 % email: ioan.mavromatis@bristol.ac.uk
 % email: ioannis.mavromatis@toshiba-bril.com
+    
+    if(isempty(buildings))
+        return 
+    end
 
     % randomly give a height for each building
     [ ~, idx ] = unique(buildings(:,1),'rows','stable');
