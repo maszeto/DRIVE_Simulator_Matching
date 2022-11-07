@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<!--
+
+POIs for edges:
+	[123106011,30321913,528363194,976016924,528320137]
+
+on network:
+	.\tenWest.net.xml
+-->
+
+<POIs>
+    <poi id="30321913-1" type="default" color="1,0,0" layer="0" x="3153.27" y="1590.37"/>
+    <poi id="30321913-2" type="default" color="1,0,0" layer="0" x="2978.35" y="1594.69"/>
+    <poi id="30321913-3" type="default" color="1,0,0" layer="0" x="2803.62" y="1604.14"/>
+    <poi id="30321913-4" type="default" color="1,0,0" layer="0" x="2630.37" y="1628.80"/>
+    <poi id="528363194-1" type="default" color="1,0,0" layer="0" x="2458.86" y="1660.44"/>
+    <poi id="528363194-2" type="default" color="1,0,0" layer="0" x="2286.35" y="1688.79"/>
+    <poi id="528363194-3" type="default" color="1,0,0" layer="0" x="2111.69" y="1696.56"/>
+    <poi id="528363194-4" type="default" color="1,0,0" layer="0" x="1937.15" y="1686.04"/>
+    <poi id="528363194-5" type="default" color="1,0,0" layer="0" x="1765.06" y="1654.59"/>
+    <poi id="976016924-1" type="default" color="1,0,0" layer="0" x="1593.20" y="1623.93"/>
+    <poi id="976016924-2" type="default" color="1,0,0" layer="0" x="1419.92" y="1600.45"/>
+    <poi id="976016924-3" type="default" color="1,0,0" layer="0" x="1245.14" y="1592.38"/>
+</POIs>

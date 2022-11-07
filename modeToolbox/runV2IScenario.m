@@ -70,6 +70,13 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
         vehicleIDs = traci.vehicle.getIDList();
         pedestrianIDs = traci.person.getIDList();
         timeStep = traci.simulation.getTime;
+        
+        %Force blockages by not allowing lane changes
+        for j = 1:length(vehicleIDs)
+            traci.vehicle.setLaneChangeMode(vehicleIDs{j}, 0b001000000000);
+            traci.vehicle.setSpeed(vehicleIDs{j}, 29);
+        end
+        
         fprintf('Preprocessing for t= %f\n',i)
         
         %vehicleTimestep is all the vehicles positions at the current

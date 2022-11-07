@@ -35,7 +35,7 @@ sumo.maxVehicleNumber = 200; % maximum number of vehicles per timestep - set to 
 sumo.startTime = 0;
 sumo.endTime = 200;
 sumo.maxPedestrianNumber = 200; % maximum number of pedestrians per timestep - set to zero if all pedestrians are to be considered
-sumo.gui = 0; % set to 1 if the user wants to use the SUMO GUI
+sumo.gui = 1; % set to 1 if the user wants to use the SUMO GUI
 
 %% Matching scenario Config 
 global MATCHING
@@ -48,8 +48,8 @@ MATCHING.name = "MatchingTest";
 %% Lookup Tables Vehicles Types
 % sumo.vehicleTypes= {'Ambulance';'Passenger'};
 % sumo.vehicleTypeAbbreviation= {'amb' ; 'pas'};
-sumo.vehicleTypes= {'car'};
-sumo.vehicleTypeAbbreviation= {'car'};
+sumo.vehicleTypes= {'Ambulance';'Passenger'};
+sumo.vehicleTypeAbbreviation= {'amb' ; 'pas'};
 
 %% Map Settings1
 map.file = './mobilityFiles/sumoFiles/tenWest/tenWest.osm.xml'; % manhattanLarge - londonSmall - smartJunction

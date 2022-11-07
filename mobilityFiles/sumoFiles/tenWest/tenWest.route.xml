@@ -1,0 +1,43 @@
+<!-- <routes>
+    <vType id="pas" accel="0.8" decel="4.5" sigma="0.5" length="5" maxSpeed="70"/>
+
+    <vehicle id="0" type="pas" depart="3" color="1,0,0">
+      <route edges="123106011 30321913 528363194 528320137"/>
+    </vehicle>
+        <vehicle id="1" type="pas" depart="3" color="1,0,0">
+      <route edges="123106011 30321913 528363194 528320137"/>
+    </vehicle>
+    <vehicle id="2" type="pas" depart="3" color="1,0,0">
+      <route edges="123106011 30321913 528363194 528320137"/>
+    </vehicle>
+
+</routes> -->
+
+<routes>
+    <vType id="pas" accel="0.8" decel="4.5" sigma="0.5" length="5" maxSpeed="70"/>
+    <vType id="amb" accel="0.8" decel="4.5" sigma="0.5" length="13.5" maxSpeed="70" guiShape="truck/semitrailer"/>
+
+    <route id="route0" color="1,1,0" edges="123106011 30321913 528363194 976016924 528320137"/>
+
+    <vehicle id="0" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="1" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="2" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="3" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="4" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="5" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="6" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="10" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="11" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="12" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="13" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="14" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="15" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="16" type="pas" route="route0" depart="1" departLane = "3" color="1,0,0"/>
+    <vehicle id="7" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="8" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="9" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="17" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="18" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="19" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+
+</routes>
