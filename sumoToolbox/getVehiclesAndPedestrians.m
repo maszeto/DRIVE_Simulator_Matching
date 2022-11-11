@@ -24,7 +24,9 @@ function [vehicles,pedestrians] = getVehiclesAndPedestrians(sumo,vehicleIDs,pede
     % Parse all the vehicles from this timestep
     for k = 1:length(vehicleIDs)
         vehicleClass = find(strcmp(traci.vehicle.getTypeID(vehicleIDs{k}),sumo.vehicleTypeAbbreviation)==1);
-        vehicles = [ vehicles ; str2double(vehicleIDs{k}) traci.vehicle.getPosition(vehicleIDs{k}) timeStep vehicleClass ];
+        vehicles = [ vehicles ; str2double(vehicleIDs{k}) traci.vehicle.getPosition(vehicleIDs{k}) timeStep vehicleClass ...
+                        traci.vehicle.getSpeed(vehicleIDs{k}) traci.vehicle.getAcceleration(vehicleIDs{k}) ...
+                        traci.vehicle.getAngle(vehicleIDs{k}) traci.vehicle.getLaneIndex(vehicleIDs{k})];
     end
 
     pedestrians = [];

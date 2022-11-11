@@ -108,10 +108,10 @@ function printAnimate(sumo,vehicle,pedestrian,outputMap, xyLinks)
             end
             
         end
-        if MATCHING.verboseMap == 1
-            if ~isempty(xyLinks{timeIndex})
+        if MATCHING.verboseMap == 1 && timeIndex > 1
+            if ~isempty(xyLinks{timeIndex-1})
                 %plot matches 
-                matchLinks = xyLinks{timeIndex};
+                matchLinks = xyLinks{timeIndex-1};
                 X1 = matchLinks(:,1)';
                 X2 = matchLinks(:, 3)';
                 Y1 = matchLinks(:, 2)';

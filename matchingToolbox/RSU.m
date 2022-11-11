@@ -8,12 +8,13 @@ classdef RSU
         x           % X position
         y           % Y position
         height      % Height I think
+        connectedVehicles %List of connected vehicles at T
     end
     
     methods
         function obj = RSU(id)
         end
-        function obj = initRSU(obj, id,index,x,y,height)
+        function obj = initRSU(obj, id,index,x,y,height, simTime)
             %RSU Construct an instance of this class
             %   Detailed explanation goes here
             obj.id = id;
@@ -21,12 +22,17 @@ classdef RSU
             obj.x = x;
             obj.y = y;
             obj.height = height;
+            obj.connectedVehicles = cell(1,simTime);
         end
         
-        function outputArg = method1(obj,inputArg)
+        function obj = addConnectedVehicleAtTime(obj,time, vehicleID)
             %METHOD1 Summary of this method goes here
             %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+            if isempty(obj.connectedVehicles{time})
+                obj.connectedVehicles{time} = [vehicleID];
+            else
+                obj.connectedVehicles{time}(end+1) = vehicleID;
+            end
         end
     end
 end

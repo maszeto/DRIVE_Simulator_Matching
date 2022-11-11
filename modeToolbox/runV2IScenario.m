@@ -48,8 +48,6 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
         
     end
     
-    [losIDs, nLosIDs, losNlosStatus, distanceTiles, sortedIndexes] = losNLosV2V(outputMap,BS,BS.rats{2});
-    
     % Progress to the first simulation step
     traci.simulationStep;
     timeStep = traci.simulation.getTime;
@@ -77,17 +75,16 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
             traci.vehicle.setSpeed(vehicleIDs{j}, 29);
         end
         
-        fprintf('Preprocessing for t= %f\n',i)
+        fprintf('Preprocessing for t= %f\n',timeStep)
         
         %vehicleTimestep is all the vehicles positions at the current
         %timestep (ID, X, Y, timestep, id)
-        [ vehicleTimestep, pedestrianTimestep ] = getVehiclesAndPedestrians(sumo,vehicleIDs,pedestrianIDs,timeStep);
-        vehicles = [ vehicles ; vehicleTimestep ];
+        [ vehicleTimestep, ~ ] = getVehiclesAndPedestrians(sumo,vehicleIDs,pedestrianIDs,timeStep);
+        vehicles = [ vehicles ; vehicleTimestep];
         
         [tmp,~] = size(vehicleTimestep);
 
         if tmp>1
-            %Then check which vehicles have LoS with each other
             viewedVehicles{timeStep} = [];
             vehiclesIDsAtTime{timeStep} = vehicleTimestep(:,1);
  
@@ -107,15 +104,39 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
     [vehiclesStruct] = addViewedVehicles(viewedVehicles, vehiclesStruct);
     
     matchingSim = matchingSim.addVehiclesByStruct(vehiclesStruct);
-    %matchingSim = matchingSim.setVehicleIDsByTime(viewedVehicles);
     matchingSim.vehicleIDsByTime = vehiclesIDsAtTime;
     matchingSim = matchingSim.addRSUs(potentialPos);
     
     matchingSim.outputMap = outputMap;
     
-    matchingSim = matchingSim.calculateTileLOS(BS,  BS.rats{2});
+    %matchingSim = matchingSim.calculateTileLOS(BS,  BS.rats{2});
     
-    matchingSim = matchingSim.createRSUConnectionScheduleNearest();
+%     matchingSim = matchingSim.setBuildingLines();
+%     matchingSim = matchingSim.createRSUConnectionScheduleNearest(matchingSim.buildingLines);
+    
+%   Highway scenario, so no initial blockages
+    matchingSim = matchingSim.createRSUConnectionScheduleNearest([]);
+    
+    %Running the baseline scenario
+    for i = 1:sumo.endTime
+        fprintf('RSU Selection for t= %f using greedy method\n',i)
+        for j = 1:length(matchingSim.vehicleIDsByTime{i})
+            curVeh = matchingSim.getVehicleByID(matchingSim.vehicleIDsByTime{i}(j));
+            xPos = curVeh.getXPosAtTime(i);
+            yPos = curVeh.getYPosAtTime(i);
+            blockages = matchingSim.getPotentialBlockages(i, curVeh.vehicleId, 75);
+            nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+            timeIndex = curVeh.getTimeIndex(i);
+            curVeh.RSUs(timeIndex) = nearestRSUIndex;
+            matchingSim.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
+            if nearestRSUIndex ~= -1
+                matchingSim = matchingSim.updateRSUConnectionsAtTime(i,nearestRSUIndex, curVeh.vehicleIndex);
+            end
+        end
+    end
+    
+    
+    
     outputMap.RSUs = matchingSim.rsuList;
     matchingSim = matchingSim.createXYLinksV2I();
     xyLinks = matchingSim.xyLinks;

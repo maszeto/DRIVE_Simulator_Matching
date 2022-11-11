@@ -59,7 +59,7 @@ classdef MatchingSim
             
             for i = 1:length(potentialPos.mmWaves.pos)
                 rsuList(i) = rsuList(i).initRSU(i, i, potentialPos.mmWaves.pos(i,2), ...
-                    potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3));
+                    potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3), length(obj.timesteps));
             end
             obj.rsuList = rsuList;
             
@@ -83,6 +83,18 @@ classdef MatchingSim
             tileID = nearestTileIndex;
         end
         
+        function nearestRSUID = getNearestRSU(obj, vehicleID, timeStep)
+            curVeh = obj.getVehicleByID(vehicleID);
+            xPos = curVeh.getXPosAtTime(timeStep);
+            yPos = curVeh.getYPosAtTime(timeStep);
+            
+            
+            
+            
+            nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, []);
+        end
+        
+        
         function hasLOS = hasLOS(obj, x1, y1, x2, y2, timeStep, fastCalculation)
             %Check if there is LOS between two points at a given timestep
             %Should be two methods, one for speed one for raw calculation 
@@ -103,11 +115,10 @@ classdef MatchingSim
                 hasLOS = ~isempty(find(obj.losIDs{nearestTileIndex1} == nearestTileIndex2));
                 
             end
-            
-            
+
         end
         
-        function obj = createRSUConnectionScheduleNearest(obj)
+        function obj = createRSUConnectionScheduleNearest(obj, blockages)
             %MATCHINGSIM Create the matching schedule for each vehicle
             %object
             %   Detailed explanation goes here
@@ -115,10 +126,8 @@ classdef MatchingSim
                 fprintf("ERROR: Set output map before creating RSU connection schedule\n")
             end
             
-            obj = obj.setBuildingLines();
-
             for i = 1:obj.numVehicles
-                obj.vehiclesByIndex(i) = obj.vehiclesByIndex(i).createRSUConnectionScheduleNearest(obj.rsuList, obj.buildingLines);
+                obj.vehiclesByIndex(i) = obj.vehiclesByIndex(i).createRSUConnectionScheduleNearest(obj.rsuList, blockages);
             end
         end
         
@@ -217,6 +226,12 @@ classdef MatchingSim
         function simVehList = getVehiclesAtTime(obj, time)
         end
         
+        function obj = updateRSUConnectionsAtTime(obj, time, rsuID, vehicleID)
+            currentRSU = obj.rsuList(rsuID);
+            currentRSU = currentRSU.addConnectedVehicleAtTime(time, vehicleID);
+            obj.rsuList(rsuID)=currentRSU;
+        end
+        
         function obj = runMatching(obj, algorithm, utilityFunction)
             loadingBar = waitbar(0, "Running matching");
             runTime = length(obj.timesteps);
@@ -249,8 +264,56 @@ classdef MatchingSim
                 end
                 
             end
+
+        end
+        
+        function nearbyVehicles = getVehiclesNearby(obj, time, vehicleID, range)
+            vehicleIDsAtT = obj.vehicleIDsByTime{time};
+            vehicleX = obj.getVehicleByID(vehicleID).getXPosAtTime(time);
+            vehicleY = obj.getVehicleByID(vehicleID).getYPosAtTime(time);
+            nearbyVehicles = [];
             
+            for i = 1:length(vehicleIDsAtT)
+                
+       
+                curX = obj.getVehicleByID(vehicleIDsAtT(i)).getXPosAtTime(time);
+                curY = obj.getVehicleByID(vehicleIDsAtT(i)).getYPosAtTime(time);
+                
+                distanceVehicle = pdist([vehicleX, vehicleY;curX, curY], 'euclidean');
             
+                if distanceVehicle<=range
+                    nearbyVehicles = [nearbyVehicles, obj.getVehicleByID(vehicleIDsAtT(i))];
+                end
+            end
+            
+        end
+        
+        function blockages = getPotentialBlockages(obj, time, vehicleID, range)
+            curVeh = obj.getVehicleByID(vehicleID);
+            nearbyVehicles = obj.getVehiclesNearby(time, vehicleID, range);
+            potentialBlockages = [];
+            for i = 1:length(nearbyVehicles)
+                if (nearbyVehicles(i).vehicleType == 1)
+                    %Then it is a truck 
+                    potentialBlockages = [potentialBlockages; ...
+                                            nearbyVehicles(i).getSegments(time)];
+                end
+            end
+            
+            blockages = potentialBlockages;
+            
+        end
+        
+        function handovers = getHandoversByVehicleIndex(obj)
+            handovers = ones(1, length(obj.vehiclesByIndex));
+            for i =1:length(obj.vehiclesByIndex)
+                handovers(i) = obj.vehiclesByIndex(i).getHandovers();
+            end
+        end
+        
+        function vehicleIndex = getVehicleIndex(obj, vehicleID)
+            %Returns vehicle index in matchingSim's vehicles array
+            vehicleIndex = find(obj.vehicleIDList == vehicleID);
         end
         
         
