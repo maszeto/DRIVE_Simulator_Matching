@@ -1,4 +1,4 @@
-function [vehicles,pedestrians, outputMap, xyLinks] = ...
+function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
             runV2I(sumo,map,BS,outputMap,potentialPos,chosenRSUpos, tilesCovered,distanceTiles,...
             sortedIndexes,losNlosStatus,rssAll,distanceBuildings, sortedIndexesBuildings, rssAllBuildings)
 %RUNSUMO This is the main function of the SUMO mode. It initialises the
@@ -125,7 +125,13 @@ function [vehicles,pedestrians, outputMap, xyLinks] = ...
             xPos = curVeh.getXPosAtTime(i);
             yPos = curVeh.getYPosAtTime(i);
             blockages = matchingSim.getPotentialBlockages(i, curVeh.vehicleId, 75);
-            nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+            %nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+            nearestRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
+            otherNearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+            if curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages)
+                fprintf("Greedy FAILED!!!!\n");
+            end
+            
             timeIndex = curVeh.getTimeIndex(i);
             curVeh.RSUs(timeIndex) = nearestRSUIndex;
             matchingSim.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;

@@ -316,6 +316,47 @@ classdef MatchingSim
             vehicleIndex = find(obj.vehicleIDList == vehicleID);
         end
         
+        function [] = viewTimestep(obj, timestep)
+            % Creates plot of objects in the timestep 
+            %plot RSU Positions 
+            hold on;
+            axis equal;
+            for i = 1:length(obj.rsuList)
+                xPos = obj.rsuList(i).x;
+                yPos = obj.rsuList(i).y;
+                viscircles([xPos, yPos], 1);
+                %viscircles([xPos, yPos], 200, 'LineStyle', '--');
+                text(xPos, yPos, num2str(i));
+            end
+            
+            curVehicleIDs = obj.getVehicleIDsAtTime(timestep); 
+            
+            for i = 1:length(curVehicleIDs)
+                
+                curVehicle = obj.getVehicleByID(curVehicleIDs(i));
+                xPos = curVehicle.getXPosAtTime(timestep);
+                yPos = curVehicle.getYPosAtTime(timestep);
+                id = curVehicle.vehicleId;
+                vehicleLines = curVehicle.getSegments(timestep);
+                text(xPos, yPos, num2str(id));
+                if(curVehicle.vehicleType == 1)
+                    plot([vehicleLines(:,1)';vehicleLines(:,3)'],[vehicleLines(:,2)';vehicleLines(:,4)'], ...
+                            'Color', 'Red');
+                else
+                    plot([vehicleLines(:,1)';vehicleLines(:,3)'],[vehicleLines(:,2)';vehicleLines(:,4)'], ...
+                            'Color', 'Green');
+                end
+
+            end
+            
+            curLinks = obj.xyLinks{timestep};
+            if ~isempty(curLinks)
+                plot([curLinks(:,1)';curLinks(:,3)'],[curLinks(:,2)';curLinks(:,4)']);
+            end
+            hold off;
+            
+            
+        end
         
     end
 end

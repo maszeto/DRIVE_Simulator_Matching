@@ -101,16 +101,60 @@ classdef SimVehicle
             yPosExpected = pt(2);
         end
         
-        function nearestRSUIndex = findNearestRSUInLOS(obj, xPos, yPos, rsuList, blockages)
+        
+        function nearestRSUIndex = getNearestRSUWithGreedy(obj, xPos, yPos, rsuList)
             nearestRSUIndex = -1;
             distanceToClosestRSU = 9999;
+            maxTxDistance = 200;
             for i = 1:length(rsuList)               
                 x2 = rsuList(i).x;
                 y2 = rsuList(i).y;
                 distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
-                if distance < distanceToClosestRSU && hasLOS(xPos, yPos, x2, y2, blockages)
-                    nearestRSUIndex = i;
-                    distanceToClosestRSU = distance;
+                if distance < distanceToClosestRSU && mod(i,2)==0 && distance < maxTxDistance
+                        nearestRSUIndex = i;
+                        distanceToClosestRSU = distance;
+                end
+            end
+        end
+        
+        function greedyFailed = checkIfGreedyFailed(obj, xPos, yPos, rsuList, blockages)
+            nearestRSUIndex = -1;
+            distanceToClosestRSU = 9999;
+            maxTxDistance = 200;
+            for i = 1:length(rsuList)               
+                x2 = rsuList(i).x;
+                y2 = rsuList(i).y;
+                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
+                if distance < distanceToClosestRSU && mod(i,2)==0 && distance < maxTxDistance
+                    if (hasLOS(xPos, yPos, x2, y2, blockages) || obj.vehicleType==1)
+                        nearestRSUIndex = i;
+                        distanceToClosestRSU = distance;
+                    else
+                        fprintf("Blockage detected for %d\n", obj.vehicleId);
+                    end
+                end
+            end
+            
+            greedyFailed = (nearestRSUIndex == -1);
+            
+        end
+        
+        
+        function nearestRSUIndex = findNearestRSUInLOS(obj, xPos, yPos, rsuList, blockages)
+            nearestRSUIndex = -1;
+            distanceToClosestRSU = 9999;
+            maxTxDistance = 200;
+            for i = 1:length(rsuList)               
+                x2 = rsuList(i).x;
+                y2 = rsuList(i).y;
+                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
+                if distance < distanceToClosestRSU && distance < maxTxDistance
+                    if (hasLOS(xPos, yPos, x2, y2, blockages) || obj.vehicleType==1)
+                        nearestRSUIndex = i;
+                        distanceToClosestRSU = distance;
+                    else
+                        fprintf("Blockage detected for %d\n", obj.vehicleId);
+                    end
                 end
             end
             
@@ -132,7 +176,8 @@ classdef SimVehicle
         
         function segments = getSegments(obj, timeStep)
             % get the 4 line segments that make up the vehicle,assuming
-            % horizontal
+            % horizontal moving to the left (negative x dir) 
+           
             if(obj.vehicleType==1) %truck
                 length = 21.9456;
                 width = 2.5908;
@@ -144,20 +189,38 @@ classdef SimVehicle
             
             timeIndex = obj.getTimeIndex(timeStep);
             %position is of the front bumper
-            x = obj.x(timeIndex);
-            y = obj.y(timeIndex);
+            frontX = obj.x(timeIndex);
+            frontY = obj.y(timeIndex);
             
-            %Assume horizontal movement to the left
-            x1 = x - length;
-            y1 = y + width/2;
-            y2 = y - width/2;
-            
-            segments = [ ...
-            x, y1, x, y2;
-            x1, y1, x1, y2;
-            x, y1, x1, y1;
-            x, y2, x1, y2;
-            ];
+            if (timeIndex > 1)
+                prevX = obj.x(timeIndex-1);
+                prevY = obj.y(timeIndex-1);
+                cur = [frontX, frontY];
+                prev = [prevX, prevY];
+                v = prev - cur;
+                vunit = v/norm(v);
+                rear = cur + length*vunit; %since we are moving in neg X dir
+                
+                vunit2 = [vunit(2), -vunit(1)];%perpendicular unit vector
+                p0 = cur + (width/2)*vunit2;
+                p1 = cur - (width/2)*vunit2;
+                p2 = rear + (width/2)*vunit2;
+                p3 = rear - (width/2)*vunit2;
+                segments = [p0,p1;p0,p2;p3,p1;p3,p2];
+            else
+                %Assume horizontal movement to the left
+                x1 = frontX + length;
+                y1 = frontY + width/2;
+                y2 = frontY - width/2;
+
+                segments = [ ...
+                frontX, y1, frontX, y2;
+                x1, y1, x1, y2;
+                frontX, y1, x1, y1;
+                frontX, y2, x1, y2;
+                ];
+            end
+
    
         end
         
