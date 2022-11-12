@@ -108,7 +108,7 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     matchingSim = matchingSim.addRSUs(potentialPos);
     
     matchingSim.outputMap = outputMap;
-    
+    save('matchingSim');
     %matchingSim = matchingSim.calculateTileLOS(BS,  BS.rats{2});
     
 %     matchingSim = matchingSim.setBuildingLines();
@@ -122,21 +122,52 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
         fprintf('RSU Selection for t= %f using greedy method\n',i)
         for j = 1:length(matchingSim.vehicleIDsByTime{i})
             curVeh = matchingSim.getVehicleByID(matchingSim.vehicleIDsByTime{i}(j));
-            xPos = curVeh.getXPosAtTime(i);
-            yPos = curVeh.getYPosAtTime(i);
+            timeIndex = curVeh.getTimeIndex(i);
+            antennaPos = curVeh.getAntennaPosAtTime(i);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
             blockages = matchingSim.getPotentialBlockages(i, curVeh.vehicleId, 75);
             %nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
-            nearestRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
-            otherNearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
-            if curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages)
-                fprintf("Greedy FAILED!!!!\n");
-            end
+            selectedRSUIndex = curVeh.selectRSUAtTime(i, matchingSim.rsuList, blockages); 
+%             if timeIndex > 1
+%                 %try and connect to previous RSU 
+%                 rsuIndex = curVeh.RSUs(timeIndex-1);
+%                 if rsuIndex ~= -1
+%                     rsuX = matchingSim.rsuList(rsuIndex).x;
+%                     rsuY = matchingSim.rsuList(rsuIndex).y;
+%                     if hasLOS(xPos, yPos, rsuX, rsuY, blockages)
+%                         % we chilling, see if there is a closer RSU available
+%                         greedyRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
+%                         if ~curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages)
+%                             selectedRSUIndex = greedyRSUIndex;
+%                         else
+%                             selectedRSUIndex = rsuIndex;
+%                         end
+%                     else
+%                         selectedRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+%                     end
+%                 else
+%                     selectedRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
+%                 end
+%             else
+%                 selectedRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+%             end
             
-            timeIndex = curVeh.getTimeIndex(i);
-            curVeh.RSUs(timeIndex) = nearestRSUIndex;
+            
+            
+%             nearestRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
+%             
+%             if timeIndex > 1 && curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages) ...
+%                     && curVeh.RSUs(timeIndex-1) == nearestRSUIndex
+%                 fprintf("Greedy FAILED for %d!!!!\n", curVeh.vehicleId);
+%                 nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
+%             end
+            
+            
+            curVeh.RSUs(timeIndex) = selectedRSUIndex;
             matchingSim.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
-            if nearestRSUIndex ~= -1
-                matchingSim = matchingSim.updateRSUConnectionsAtTime(i,nearestRSUIndex, curVeh.vehicleIndex);
+            if selectedRSUIndex ~= -1
+                matchingSim = matchingSim.updateRSUConnectionsAtTime(i,selectedRSUIndex, curVeh.vehicleIndex);
             end
         end
     end

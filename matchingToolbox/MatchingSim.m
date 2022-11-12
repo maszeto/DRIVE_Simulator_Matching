@@ -166,7 +166,8 @@ classdef MatchingSim
                             matchedRSUID = simVeh.getRSUIDAtTime(timeStep);
                             if(matchedRSUID ~= -1)
                                 rsu = obj.rsuList(matchedRSUID);
-                                xyLinksCur = [xyLinksCur; rsu.x, rsu.y, simVeh.getXPosAtTime(timeStep), simVeh.getYPosAtTime(timeStep)] ;
+                                %xyLinksCur = [xyLinksCur; rsu.x, rsu.y, simVeh.getXPosAtTime(timeStep), simVeh.getYPosAtTime(timeStep)] ;
+                                xyLinksCur = [xyLinksCur; rsu.x, rsu.y, simVeh.getAntennaPosAtTime(timeStep)]; 
                             end
                         end
                     end
@@ -319,6 +320,7 @@ classdef MatchingSim
         function [] = viewTimestep(obj, timestep)
             % Creates plot of objects in the timestep 
             %plot RSU Positions 
+            clf;
             hold on;
             axis equal;
             for i = 1:length(obj.rsuList)

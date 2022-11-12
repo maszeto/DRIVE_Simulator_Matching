@@ -101,6 +101,36 @@ classdef SimVehicle
             yPosExpected = pt(2);
         end
         
+        function selectedRSUIndex = selectRSUAtTime(obj, timeStep, rsuList, blockages)
+            timeIndex = obj.getTimeIndex(timeStep);
+            antennaPos = obj.getAntennaPosAtTime(timeStep);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            
+            
+            if timeIndex == 1 || obj.RSUs(timeIndex-1)==-1
+                selectedRSUIndex = obj.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
+                return;
+            end
+            
+            %prioritize current connection 
+            prevRSU = obj.RSUs(timeIndex-1);
+            rsuX = rsuList(prevRSU).x;
+            rsuY = rsuList(prevRSU).y;
+            
+            greedyRSUIndex = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
+            if ~obj.checkIfGreedyFailed(xPos, yPos, greedyRSUIndex, rsuList, blockages)
+                selectedRSUIndex = greedyRSUIndex;
+            else
+                selectedRSUIndex = obj.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
+            end
+            
+            if ~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && prevRSU == greedyRSUIndex && obj.vehicleType==2
+                fprintf("t=%f v=%d greedy connection blocked\n", timeStep, obj.vehicleId);
+            end
+        
+
+        end
         
         function nearestRSUIndex = getNearestRSUWithGreedy(obj, xPos, yPos, rsuList)
             nearestRSUIndex = -1;
@@ -117,26 +147,14 @@ classdef SimVehicle
             end
         end
         
-        function greedyFailed = checkIfGreedyFailed(obj, xPos, yPos, rsuList, blockages)
-            nearestRSUIndex = -1;
-            distanceToClosestRSU = 9999;
-            maxTxDistance = 200;
-            for i = 1:length(rsuList)               
-                x2 = rsuList(i).x;
-                y2 = rsuList(i).y;
-                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
-                if distance < distanceToClosestRSU && mod(i,2)==0 && distance < maxTxDistance
-                    if (hasLOS(xPos, yPos, x2, y2, blockages) || obj.vehicleType==1)
-                        nearestRSUIndex = i;
-                        distanceToClosestRSU = distance;
-                    else
-                        fprintf("Blockage detected for %d\n", obj.vehicleId);
-                    end
-                end
+        function greedyFailed = checkIfGreedyFailed(obj, xPos, yPos, greedyRSUIndex, rsuList, blockages)
+            if greedyRSUIndex == -1
+                greedyFailed = 1;
+            else
+                rsuX = rsuList(greedyRSUIndex).x;
+                rsuY = rsuList(greedyRSUIndex).y;
+                greedyFailed = ~hasLOS(xPos, yPos, rsuX, rsuY, blockages);
             end
-            
-            greedyFailed = (nearestRSUIndex == -1);
-            
         end
         
         
@@ -159,6 +177,34 @@ classdef SimVehicle
             end
             
             %Think you could also do something like this > [[matchingSim.rsuList.x]' [matchingSim.rsuList.y]'] 
+        end
+        
+        function antennaPos = getAntennaPosAtTime(obj, timeStep)
+            if(obj.vehicleType==1) %truck
+                length = 21.9456;
+                width = 2.5908;
+            else 
+                %Passenger 
+                length = 5;
+                width = 1.6;
+            end
+            timeIndex = obj.getTimeIndex(timeStep);
+            %position is of the front bumper
+            frontX = obj.x(timeIndex);
+            frontY = obj.y(timeIndex);
+            
+            if (timeIndex > 1)
+                prevX = obj.x(timeIndex-1);
+                prevY = obj.y(timeIndex-1);
+                cur = [frontX, frontY];
+                prev = [prevX, prevY];
+                v = prev - cur;
+                vunit = v/norm(v);
+                antennaPos = cur + (length/2)*vunit;
+            else
+                antennaPos = [frontX, frontY];
+            end
+            
         end
         
         
