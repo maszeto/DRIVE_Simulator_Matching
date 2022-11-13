@@ -15,7 +15,7 @@
 
 <routes>
     <vType id="pas" accel="0.8" decel="4.5" sigma="0.5" length="5" maxSpeed="70"/>
-    <vType id="amb" accel="0.8" decel="4.5" sigma="0.5" length="13.5" maxSpeed="70" guiShape="truck/semitrailer"/>
+    <vType id="amb" accel="0.8" decel="4.5" sigma="0.5" length="21.9456" maxSpeed="70" guiShape="truck/semitrailer"/>
 
     <route id="route0" color="1,1,0" edges="123106011 30321913 528363194 976016924 528320137"/>
 

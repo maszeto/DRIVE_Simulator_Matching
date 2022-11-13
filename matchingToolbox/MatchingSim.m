@@ -18,6 +18,7 @@ classdef MatchingSim
         buildingLines       % line segments creating buildings
         losIDs              % Which tiles have LOS, index is tile ID
         nLosIDs             % Which tiles don't have LOS, index is tile ID
+        curTimestep         % For graphing
         
     end
     
@@ -131,6 +132,16 @@ classdef MatchingSim
             end
         end
         
+        function obj = createRSUConnectionScheduleGreedy(obj)
+            %MATCHINGSIM Create the matching schedule for each vehicle
+            %object
+            %   Detailed explanation goes here
+            
+            for i = 1:obj.numVehicles
+                obj.vehiclesByIndex(i) = obj.vehiclesByIndex(i).createRSUConnectionScheduleGreedy(obj.rsuList);
+            end
+        end
+        
         function obj = setBuildingLines(obj)
             
             if isempty(obj.outputMap)
@@ -228,9 +239,19 @@ classdef MatchingSim
         end
         
         function obj = updateRSUConnectionsAtTime(obj, time, rsuID, vehicleID)
+            if(rsuID == -1)
+                return;
+            end
             currentRSU = obj.rsuList(rsuID);
             currentRSU = currentRSU.addConnectedVehicleAtTime(time, vehicleID);
             obj.rsuList(rsuID)=currentRSU;
+        end
+        
+        function obj = clearRSUConnections(obj, simTime)
+            for i = 1:length(obj.rsuList)
+                obj.rsuList(i).connectedVehicles = cell(1,simTime);
+            end
+            
         end
         
         function obj = runMatching(obj, algorithm, utilityFunction)
@@ -305,6 +326,40 @@ classdef MatchingSim
             
         end
         
+        function los = hasLOSRSU(obj, timestep, vehicleID, rsuIndex)
+            curVeh = obj.getVehicleByID(vehicleID);
+            antennaPos = curVeh.getAntennaPosAtTime(timestep);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            rsuX = obj.rsuList(rsuIndex).x;
+            rsuY = obj.rsuList(rsuIndex).y;
+            blockages = obj.getPotentialBlockages(timestep, curVeh.vehicleId, 75);
+            
+            los = hasLOS(xPos, yPos, rsuX, rsuY, blockages);
+            
+        end
+        
+        function failed = connectionFailed(obj, timestep, vehicleID, rsuIndex)
+            
+            if rsuIndex == -1
+                failed = 0;
+                return;
+            end
+            
+            curVeh = obj.getVehicleByID(vehicleID);
+            antennaPos = curVeh.getAntennaPosAtTime(timestep);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            rsuX = obj.rsuList(rsuIndex).x;
+            rsuY = obj.rsuList(rsuIndex).y;
+            blockages = obj.getPotentialBlockages(timestep, curVeh.vehicleId, 75);
+            
+            distance =  pdist([xPos,yPos;rsuX,rsuY], 'euclidean');
+
+            failed = (~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && curVeh.vehicleType ~= 1)...
+                || distance > 200;
+        end
+        
         function handovers = getHandoversByVehicleIndex(obj)
             handovers = ones(1, length(obj.vehiclesByIndex));
             for i =1:length(obj.vehiclesByIndex)
@@ -315,6 +370,30 @@ classdef MatchingSim
         function vehicleIndex = getVehicleIndex(obj, vehicleID)
             %Returns vehicle index in matchingSim's vehicles array
             vehicleIndex = find(obj.vehicleIDList == vehicleID);
+        end
+        
+        function [] = viewSimulation(obj)
+            userInput = 1;
+            timestep = 1;
+            while(1)
+                viewTimestep(obj, timestep)
+                fprintf("Current timestep is: %d\n", timestep);
+                userInput = input("Enter timestep, -1 exit, 0 back, enter to continue\n");
+                fprintf("Inputted: %d\n", userInput);
+                
+                
+                if(isempty(userInput))
+                    timestep = timestep + 1;
+                else
+                    if(userInput == 0)
+                        timestep = timestep - 1;
+                    elseif(userInput == -1)
+                        break;
+                    else
+                        timestep = userInput;
+                    end
+                end
+            end
         end
         
         function [] = viewTimestep(obj, timestep)
@@ -355,6 +434,7 @@ classdef MatchingSim
             if ~isempty(curLinks)
                 plot([curLinks(:,1)';curLinks(:,3)'],[curLinks(:,2)';curLinks(:,4)']);
             end
+            
             hold off;
             
             

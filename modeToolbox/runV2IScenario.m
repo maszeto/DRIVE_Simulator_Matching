@@ -129,41 +129,7 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
             blockages = matchingSim.getPotentialBlockages(i, curVeh.vehicleId, 75);
             %nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
             selectedRSUIndex = curVeh.selectRSUAtTime(i, matchingSim.rsuList, blockages); 
-%             if timeIndex > 1
-%                 %try and connect to previous RSU 
-%                 rsuIndex = curVeh.RSUs(timeIndex-1);
-%                 if rsuIndex ~= -1
-%                     rsuX = matchingSim.rsuList(rsuIndex).x;
-%                     rsuY = matchingSim.rsuList(rsuIndex).y;
-%                     if hasLOS(xPos, yPos, rsuX, rsuY, blockages)
-%                         % we chilling, see if there is a closer RSU available
-%                         greedyRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
-%                         if ~curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages)
-%                             selectedRSUIndex = greedyRSUIndex;
-%                         else
-%                             selectedRSUIndex = rsuIndex;
-%                         end
-%                     else
-%                         selectedRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
-%                     end
-%                 else
-%                     selectedRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
-%                 end
-%             else
-%                 selectedRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
-%             end
-            
-            
-            
-%             nearestRSUIndex = curVeh.getNearestRSUWithGreedy(xPos, yPos, matchingSim.rsuList);
-%             
-%             if timeIndex > 1 && curVeh.checkIfGreedyFailed(xPos, yPos, matchingSim.rsuList, blockages) ...
-%                     && curVeh.RSUs(timeIndex-1) == nearestRSUIndex
-%                 fprintf("Greedy FAILED for %d!!!!\n", curVeh.vehicleId);
-%                 nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, blockages);
-%             end
-            
-            
+
             curVeh.RSUs(timeIndex) = selectedRSUIndex;
             matchingSim.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
             if selectedRSUIndex ~= -1
@@ -172,10 +138,76 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
         end
     end
     
+    greedyHandovers = matchingSim.getHandoversByVehicleIndex()
     
+    %Running for our method, reset connectedVehicles
+    matchingSim = matchingSim.clearRSUConnections(sumo.endTime);
+    matchingSim = matchingSim.createRSUConnectionScheduleGreedy();
+    
+    for i = 1:sumo.endTime
+        fprintf('RSU Selection for t= %f using predictive method\n',i)
+        
+        %For each vehicle in this timestep
+        %connect to RSU from schedule 
+        %if non los with RSU, then connect to nearest in LOS
+        for j = 1:length(matchingSim.vehicleIDsByTime{i})
+            curVeh = matchingSim.getVehicleByID(matchingSim.vehicleIDsByTime{i}(j));
+            timeIndex = curVeh.getTimeIndex(i);
+            selectedRSUIndex = curVeh.RSUPlan(timeIndex);
+            antennaPos = curVeh.getAntennaPosAtTime(i);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            blockages = matchingSim.getPotentialBlockages(i, curVeh.vehicleId, 75);
+
+            if (matchingSim.connectionFailed(i, curVeh.vehicleId, selectedRSUIndex))
+                selectedRSUIndex = curVeh.selectRSUAtTime(i, matchingSim.rsuList, blockages);
+            end
+            matchingSim = matchingSim.updateRSUConnectionsAtTime(i,selectedRSUIndex, curVeh.vehicleIndex);
+            curVeh.RSUs(timeIndex) = selectedRSUIndex;
+            matchingSim.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
+
+        end
+        
+        %for each RSU, get list of currently connected vehicles
+        %check for blockages with other connected vehicles
+        %update that vehicles schedule, assume RSUs are connected, so they
+        %make decision together
+        
+        for j = 1:length(matchingSim.rsuList)            
+            if(mod(j,2)==0)
+                continue;
+            end
+            
+            % For all odd RSUs (We assume RSUs work in pairs of 2)
+            curRSU1 = matchingSim.rsuList(j);
+            curRSU2 = matchingSim.rsuList(j+1);
+            connectedVehicles = [curRSU1.connectedVehicles{i}, ...
+                                    curRSU2.connectedVehicles{i}];
+            if isempty(connectedVehicles)
+                continue;
+            end
+            
+            otherVehicles = SimVehicle(1,length(connectedVehicles));
+            
+            for k = 1:length(connectedVehicles)
+                otherVehicles(k) = matchingSim.vehiclesByIndex(connectedVehicles(k));  
+            end
+            
+            for k = 1:length(connectedVehicles)
+                curVeh = matchingSim.vehiclesByIndex(connectedVehicles(k));
+                matchingSim.vehiclesByIndex(connectedVehicles(k)) = ...
+                    curRSU1.updateSimVehSchedule(i, curVeh, otherVehicles, matchingSim.rsuList, 10);
+            end
+            
+        end
+        
+    end
+    
+    goodHandovers = matchingSim.getHandoversByVehicleIndex()
     
     outputMap.RSUs = matchingSim.rsuList;
     matchingSim = matchingSim.createXYLinksV2I();
+    matchingSim.viewSimulation();
     xyLinks = matchingSim.xyLinks;
     
 %     % Start iterating for all the timesteps

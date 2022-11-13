@@ -82,6 +82,19 @@ classdef SimVehicle
             obj.RSUPlan = RSUs;
         end
         
+        function obj = createRSUConnectionScheduleGreedy(obj,rsuList)
+            RSUs = length(obj.times);
+            
+            for i = 1:length(obj.times)
+                %For each timestep 
+                xPos = obj.x(i);
+                yPos = obj.y(i);
+                RSUs(i) = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
+            end
+            obj.RSUPlan = RSUs;
+        end
+        
+        
         function [xPosExpected, yPosExpected] = getExpectedPositionAtTimeIndex(obj, timeIndex, speed)
             % returns expected position based on route, speed is in m/s 
             estimatedDistanceTraveled = timeIndex * speed;
@@ -110,6 +123,12 @@ classdef SimVehicle
             
             if timeIndex == 1 || obj.RSUs(timeIndex-1)==-1
                 selectedRSUIndex = obj.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
+                return;
+            end
+            
+            if(obj.vehicleType == 1)
+                %Truck, so no chance for blockage
+                selectedRSUIndex = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
                 return;
             end
             
@@ -156,8 +175,7 @@ classdef SimVehicle
                 greedyFailed = ~hasLOS(xPos, yPos, rsuX, rsuY, blockages);
             end
         end
-        
-        
+         
         function nearestRSUIndex = findNearestRSUInLOS(obj, xPos, yPos, rsuList, blockages)
             nearestRSUIndex = -1;
             distanceToClosestRSU = 9999;
@@ -206,7 +224,6 @@ classdef SimVehicle
             end
             
         end
-        
         
         function handoverNum = getHandovers(obj)
             % A handover is defined as when an vehicle switches RSUs, we
@@ -273,6 +290,24 @@ classdef SimVehicle
         function rsuID = getRSUIDAtTime(obj, timeStep)
             timeIndex = find(obj.times == timeStep);
             rsuID = obj.RSUs(timeIndex);
+        end
+        
+        function exactPos = getPosNext(obj, timeStep, posCount)
+            %Returns the vehicles exact position for the next steps timesteps
+            exactPos = [];
+            timeIndex = obj.getTimeIndex(timeStep);
+            maxTimestep = length(obj.x);
+            if timeIndex + posCount > maxTimestep
+                %return as much as possible 
+                posCount = maxTimestep - timeIndex;
+            end
+            
+            curPos = 1;
+            
+            while curPos <= posCount
+                exactPos = [exactPos; obj.x(timeIndex + curPos), obj.y(timeIndex + curPos)];
+                curPos = curPos + 1;
+            end 
         end
         
         function viewedVehicleIDs = getVehiclesInViewAtTime(obj, timeStep)
