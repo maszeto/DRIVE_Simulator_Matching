@@ -159,20 +159,55 @@ classdef SimVehicle
                 x2 = rsuList(i).x;
                 y2 = rsuList(i).y;
                 distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
-                if distance < distanceToClosestRSU && mod(i,2)==0 && distance < maxTxDistance
+                if distance < distanceToClosestRSU && distance < maxTxDistance
+                        nearestRSUIndex = rsuList(i).index;
+                        distanceToClosestRSU = distance;
+                end
+            end
+        end
+
+        function nearestRSUIndex = getNearestRSUWithGreedyRSUPairs(obj, xPos, yPos, rsuList)
+            nearestRSUIndex = -1;
+            distanceToClosestRSU = 9999;
+            maxTxDistance = 200;
+            for i = 1:length(rsuList)               
+                x2 = rsuList(i).x;
+                y2 = rsuList(i).y;
+                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
+                isEven = mod(i,2) == 0;
+                if distance < distanceToClosestRSU && ~isEven && distance < maxTxDistance
                         nearestRSUIndex = i;
                         distanceToClosestRSU = distance;
                 end
             end
         end
         
+        function nearestRSUIndex = getNearestRSUWithGreedyIgnore(obj, xPos, yPos, rsuList, badRSUs)
+            nearestRSUIndex = -1;
+            distanceToClosestRSU = 9999;
+            maxTxDistance = 200;
+            for i = 1:length(rsuList)               
+                x2 = rsuList(i).x;
+                y2 = rsuList(i).y;
+                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
+                if distance < distanceToClosestRSU && distance < maxTxDistance && isempty(find(badRSUs == i))
+                        nearestRSUIndex = rsuList(i).index;
+                        distanceToClosestRSU = distance;
+                end
+            end
+        end
+        
+        
         function greedyFailed = checkIfGreedyFailed(obj, xPos, yPos, greedyRSUIndex, rsuList, blockages)
             if greedyRSUIndex == -1
+                greedyFailed = 1;
+            elseif isempty(rsuList(greedyRSUIndex))
                 greedyFailed = 1;
             else
                 rsuX = rsuList(greedyRSUIndex).x;
                 rsuY = rsuList(greedyRSUIndex).y;
-                greedyFailed = ~hasLOS(xPos, yPos, rsuX, rsuY, blockages);
+                distance =  pdist([xPos,yPos;rsuX,rsuY], 'euclidean');
+                greedyFailed = ~hasLOS(xPos, yPos, rsuX, rsuY, blockages) || distance > 200;
             end
         end
          
@@ -188,8 +223,6 @@ classdef SimVehicle
                     if (hasLOS(xPos, yPos, x2, y2, blockages) || obj.vehicleType==1)
                         nearestRSUIndex = i;
                         distanceToClosestRSU = distance;
-                    else
-                        fprintf("Blockage detected for %d\n", obj.vehicleId);
                     end
                 end
             end

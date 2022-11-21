@@ -50,24 +50,10 @@ classdef RSU
                 depth = maxTimestep - timeIndex;
             end
             
-            blockageOccurences = zeros(1, depth);
             proposedPlan = egoVeh.RSUPlan(timeIndex+1:timeIndex+depth);
-            %find Ideal schedule, plan, track if a blockage occurs  
-            curDepth = 1;
-            while curDepth <= depth
-                blockages = obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth);
-                antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
-                xPos = antennaPos(1);
-                yPos = antennaPos(2);
-                proposedRSU = proposedPlan(curDepth);
-                greedyFailed = egoVeh.checkIfGreedyFailed(xPos, yPos, proposedRSU, rsuList, blockages);
-                if(greedyFailed)
-                    blockageOccurences(curDepth) = proposedRSU;
-                end
-                curDepth = curDepth + 1;
-            end 
             
-            %find where blockages occurs
+            %find when blockages occurs
+            blockageOccurences = obj.findBlockageOccurences(egoVeh, otherVehicles, timestep, depth, proposedPlan, rsuList);
             badConnectionIndices = find(blockageOccurences~=0);
             
             if(isempty(badConnectionIndices))
@@ -104,6 +90,90 @@ classdef RSU
             simVeh = egoVeh;
         end
         
+        function simVeh = updateSchedule(obj, timestep, egoVeh, otherVehicles, rsuList, depth)
+            if(egoVeh.vehicleType == 1)
+                simVeh = egoVeh;
+                return;
+            end
+            
+            %vehicle and other vehicles are objects
+            %depth is how many timesteps into the future
+            timeIndex = egoVeh.getTimeIndex(timestep);     
+            maxTimestep = length(egoVeh.times);
+            if timeIndex + depth > maxTimestep
+                %return as much as possible 
+                depth = maxTimestep - timeIndex;
+            end
+            
+            proposedPlan = egoVeh.RSUPlan(timeIndex+1:timeIndex+depth);
+            
+            updatedPlan = obj.removeScheduledBlockages(timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, []);
+            
+            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = updatedPlan;
+            simVeh = egoVeh;
+        end
+        
+        function proposedPlan = removeScheduledBlockages(obj, timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs)
+        
+            %find when blockages occurs
+            blockageOccurences = obj.findBlockageOccurences(egoVeh, otherVehicles, timestep, depth, proposedPlan, rsuList);
+            badConnectionIndices = find(blockageOccurences>0);
+            
+            if(isempty(badConnectionIndices))
+                
+                return
+            end
+            %update schedule 
+            for i = 1:length(badConnectionIndices)
+                badIndex = badConnectionIndices(i);
+                badRSU = blockageOccurences(badIndex);
+                badRSUs = [badRSUs, badRSU];
+                goodRSU = egoVeh.getNearestRSUWithGreedyIgnore(...
+                        egoVeh.getXPosAtTime(timestep + badIndex), egoVeh.getYPosAtTime(timestep+badIndex), rsuList, badRSUs);
+                %try and replace all 
+                badSelections = find(proposedPlan(1:badIndex) == badRSU);
+                improvedPlan = proposedPlan;
+                for j = 1:length(badSelections)
+                    improvedPlan(badSelections(j)) = goodRSU;
+                end
+                newBlockageOccurences = obj.findBlockageOccurences(egoVeh, otherVehicles, timestep, badIndex, improvedPlan, rsuList);
+                if(~isempty(find(newBlockageOccurences>0)))
+                    proposedPlan(badIndex) = goodRSU;
+                else
+                    proposedPlan = improvedPlan;
+                end
+            end
+            
+           %refine schedule 
+            
+            
+            proposedPlan = obj.removeScheduledBlockages(timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs);
+ 
+        end
+        
+        function proposedPlan = reduceHandovers(obj, timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs)
+            
+        end
+        
+        function blockageOccurences = findBlockageOccurences(obj, egoVeh, otherVehicles, timestep, depth, proposedPlan, rsuList)
+            blockageOccurences = zeros(1, depth);
+            
+            %find Ideal schedule, plan, track if a blockage occurs  
+            curDepth = 1;
+            while curDepth <= depth
+                blockages = obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth);
+                antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                proposedRSU = proposedPlan(curDepth);
+                greedyFailed = egoVeh.checkIfGreedyFailed(xPos, yPos, proposedRSU, rsuList, blockages);
+                if(greedyFailed)
+                    blockageOccurences(curDepth) = proposedRSU;
+                end
+                curDepth = curDepth + 1;
+            end 
+        end
+        
         function blockages = getBlockagesFromVehicles(obj,vehicles, timestep)
             blockages = [];
             for i = 1:length(vehicles)
@@ -115,7 +185,26 @@ classdef RSU
             end
         end
         
-        
+        function failed = connectionFailed(obj, timestep, vehicleID, rsuIndex)
+            
+            if rsuIndex == -1
+                failed = 0;
+                return;
+            end
+            
+            curVeh = obj.getVehicleByID(vehicleID);
+            antennaPos = curVeh.getAntennaPosAtTime(timestep);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            rsuX = obj.rsuList(rsuIndex).x;
+            rsuY = obj.rsuList(rsuIndex).y;
+            blockages = obj.getPotentialBlockages(timestep, curVeh.vehicleId, 75);
+            
+            distance =  pdist([xPos,yPos;rsuX,rsuY], 'euclidean');
+
+            failed = (~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && curVeh.vehicleType ~= 1)...
+                || distance > 200;
+        end
         
     end
 end

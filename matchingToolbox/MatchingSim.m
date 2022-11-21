@@ -63,7 +63,7 @@ classdef MatchingSim
                     potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3), length(obj.timesteps));
             end
             obj.rsuList = rsuList;
-            
+
         end
         
         function obj = calculateTileLOS(obj, BS, ratName)
@@ -88,13 +88,9 @@ classdef MatchingSim
             curVeh = obj.getVehicleByID(vehicleID);
             xPos = curVeh.getXPosAtTime(timeStep);
             yPos = curVeh.getYPosAtTime(timeStep);
-            
-            
-            
-            
+
             nearestRSUIndex = curVeh.findNearestRSUInLOS(xPos, yPos, matchingSim.rsuList, []);
         end
-        
         
         function hasLOS = hasLOS(obj, x1, y1, x2, y2, timeStep, fastCalculation)
             %Check if there is LOS between two points at a given timestep
@@ -235,9 +231,6 @@ classdef MatchingSim
             vehicleIDsAtT = obj.vehicleIDsByTime{time};
         end
         
-        function simVehList = getVehiclesAtTime(obj, time)
-        end
-        
         function obj = updateRSUConnectionsAtTime(obj, time, rsuID, vehicleID)
             if(rsuID == -1)
                 return;
@@ -254,6 +247,115 @@ classdef MatchingSim
             
         end
         
+        function obj = runGreedyScenario(obj, timeStep)
+            fprintf('RSU Selection for t= %f using greedy method\n',timeStep)
+            for j = 1:length(obj.vehicleIDsByTime{timeStep})
+                curVeh = obj.getVehicleByID(obj.vehicleIDsByTime{timeStep}(j));
+                timeIndex = curVeh.getTimeIndex(timeStep);
+                antennaPos = curVeh.getAntennaPosAtTime(timeStep);
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 75);
+                selectedRSUIndex = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages); 
+
+                curVeh.RSUs(timeIndex) = selectedRSUIndex;
+                obj.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
+                if selectedRSUIndex ~= -1
+                    obj = obj.updateRSUConnectionsAtTime(timeStep,selectedRSUIndex, curVeh.vehicleIndex);
+                end
+            end
+        end
+        
+        function obj = connectVehiclesToRSU(obj, timeStep)
+            %fprintf('RSU Selection for t= %f using predictive method\n',timeStep)
+            %For each vehicle in this timestep
+            %connect to RSU from schedule 
+            %if non los with RSU, then connect to nearest in LOS
+            for j = 1:length(obj.vehicleIDsByTime{timeStep})
+                curVeh = obj.getVehicleByID(obj.vehicleIDsByTime{timeStep}(j));
+                timeIndex = curVeh.getTimeIndex(timeStep);
+                selectedRSUIndex = curVeh.RSUPlan(timeIndex);
+                antennaPos = curVeh.getAntennaPosAtTime(timeStep);
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 75);
+
+                if (obj.connectionFailed(timeStep, curVeh.vehicleId, selectedRSUIndex))
+                    badIndex = selectedRSUIndex;
+                    selectedRSUIndex = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages);
+                    fprintf("Schedule for %d failed to predict blockage at t=%d (planned %d selected %d)\n", ...
+                        curVeh.vehicleId, timeStep, badIndex, selectedRSUIndex);
+                end
+                obj = obj.updateRSUConnectionsAtTime(timeStep,selectedRSUIndex, curVeh.vehicleIndex);
+                curVeh.RSUs(timeIndex) = selectedRSUIndex;
+                obj.vehiclesByIndex(curVeh.vehicleIndex) = curVeh;
+            end
+        end
+        
+        function obj = updateVehiclesSchedules(obj, timeStep, depth)
+            %for each RSU, get list of currently connected vehicles
+            %check for blockages with other connected vehicles
+            %update that vehicles schedule, assume RSUs are connected, so they
+            %make decision together
+        
+            for j = 1:length(obj.rsuList)
+                curRSU1 = obj.rsuList(j);
+
+                connectedVehicles = [curRSU1.connectedVehicles{timeStep}];
+                if isempty(connectedVehicles)
+                    continue;
+                end
+
+                otherVehicles = SimVehicle(1,length(connectedVehicles));
+
+                for k = 1:length(connectedVehicles)
+                    otherVehicles(k) = obj.vehiclesByIndex(connectedVehicles(k));  
+                end
+
+                for k = 1:length(connectedVehicles)
+                    curVeh = obj.vehiclesByIndex(connectedVehicles(k));
+                   obj.vehiclesByIndex(connectedVehicles(k)) = ...
+                       curRSU1.updateSchedule(timeStep, curVeh, otherVehicles, obj.rsuList, depth);
+                end
+
+            end
+        end
+
+        function obj = updateVehiclesSchedulesRSUPairs(obj, timeStep, depth)
+            %for each RSU, get list of currently connected vehicles
+            %check for blockages with other connected vehicles
+            %update that vehicles schedule, assume RSUs are connected, so they
+            %make decision together
+        
+            for j = 1:length(obj.rsuList)
+                if(mod(j,2)==0)
+                    continue;
+                end
+
+                % For all odd RSUs (We assume RSUs work in pairs of 2)
+                curRSU1 = obj.rsuList(j);
+                curRSU2 = obj.rsuList(j+1);
+                connectedVehicles = [curRSU1.connectedVehicles{timeStep}, ...
+                                        curRSU2.connectedVehicles{timeStep}];
+                if isempty(connectedVehicles)
+                    continue;
+                end
+
+                otherVehicles = SimVehicle(1,length(connectedVehicles));
+
+                for k = 1:length(connectedVehicles)
+                    otherVehicles(k) = obj.vehiclesByIndex(connectedVehicles(k));  
+                end
+
+                for k = 1:length(connectedVehicles)
+                    curVeh = obj.vehiclesByIndex(connectedVehicles(k));
+                   obj.vehiclesByIndex(connectedVehicles(k)) = ...
+                       curRSU1.updateSchedule(timeStep, curVeh, otherVehicles, obj.rsuList, depth);
+                end
+
+            end
+        end
+
         function obj = runMatching(obj, algorithm, utilityFunction)
             loadingBar = waitbar(0, "Running matching");
             runTime = length(obj.timesteps);
@@ -296,7 +398,9 @@ classdef MatchingSim
             nearbyVehicles = [];
             
             for i = 1:length(vehicleIDsAtT)
-                
+                if(isempty(obj.getVehicleByID(vehicleIDsAtT(i))))
+                    continue;
+                end
        
                 curX = obj.getVehicleByID(vehicleIDsAtT(i)).getXPosAtTime(time);
                 curY = obj.getVehicleByID(vehicleIDsAtT(i)).getYPosAtTime(time);
@@ -360,6 +464,29 @@ classdef MatchingSim
                 || distance > 200;
         end
         
+        function obj = fixVehiclesByTime(obj)
+            for i = 1:length(obj.vehicleIDsByTime)
+                needToRemove = 1;
+                while(needToRemove == 1)
+                    if(isempty(obj.vehicleIDsByTime{i}))
+                        needToRemove = 0;
+                        continue;
+                    end
+                    for j = 1:length(obj.vehicleIDsByTime{i})
+                        vehicle = obj.getVehicleByID(obj.vehicleIDsByTime{i}(j));
+                        if isempty(vehicle)
+                            fprintf("Vehicle id %d removed\n", obj.vehicleIDsByTime{i}(j)); 
+                            obj.vehicleIDsByTime{i}(j) = [];
+                            break;
+                        elseif j == length(obj.vehicleIDsByTime{i})
+                            needToRemove = 0;
+                        end
+                    end
+                end
+            end 
+            
+        end
+        
         function handovers = getHandoversByVehicleIndex(obj)
             handovers = ones(1, length(obj.vehiclesByIndex));
             for i =1:length(obj.vehiclesByIndex)
@@ -406,7 +533,7 @@ classdef MatchingSim
                 xPos = obj.rsuList(i).x;
                 yPos = obj.rsuList(i).y;
                 viscircles([xPos, yPos], 1);
-                %viscircles([xPos, yPos], 200, 'LineStyle', '--');
+                viscircles([xPos, yPos], 200, 'LineStyle', '--');
                 text(xPos, yPos, num2str(i));
             end
             
