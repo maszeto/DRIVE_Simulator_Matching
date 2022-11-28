@@ -26,6 +26,10 @@ classdef SimVehicle
         matchingCandidates  % List of SimVehicle Objects indexed by timeIndex
         route               % Line segments which make up the route
         routePlan           % Projected route based on plan 
+        blockageTimes       % Unexpected blockage time indexes, to track what time index there was an unexpected blockage
+        datarate            % achieved datarate at each timestep
+        rss                 % The RSS at each timestep
+        adjustedDataRate    % Calculated after taking to account handover overheads etc. 
     end
     
     methods
@@ -48,6 +52,8 @@ classdef SimVehicle
             obj.angle = vehiclesStruct.vehNode(vehicleIndex).angle;
             obj.lane = vehiclesStruct.vehNode(vehicleIndex).lane;
             obj.vehiclesInView = vehiclesStruct.vehNode(vehicleIndex).inView;
+            obj.datarate = zeros(1, length(obj.times));
+            obj.rss = zeros(1, length(obj.times));
             
         end
         
@@ -94,7 +100,6 @@ classdef SimVehicle
             obj.RSUPlan = RSUs;
         end
         
-        
         function [xPosExpected, yPosExpected] = getExpectedPositionAtTimeIndex(obj, timeIndex, speed)
             % returns expected position based on route, speed is in m/s 
             estimatedDistanceTraveled = timeIndex * speed;
@@ -114,7 +119,7 @@ classdef SimVehicle
             yPosExpected = pt(2);
         end
         
-        function selectedRSUIndex = selectRSUAtTime(obj, timeStep, rsuList, blockages)
+        function [selectedRSUIndex, obj] = selectRSUAtTime(obj, timeStep, rsuList, blockages)
             timeIndex = obj.getTimeIndex(timeStep);
             antennaPos = obj.getAntennaPosAtTime(timeStep);
             xPos = antennaPos(1);
@@ -145,6 +150,7 @@ classdef SimVehicle
             end
             
             if ~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && prevRSU == greedyRSUIndex && obj.vehicleType==2
+                obj.blockageTimes = [obj.blockageTimes, timeIndex];
                 fprintf("t=%f v=%d greedy connection blocked\n", timeStep, obj.vehicleId);
             end
         
@@ -196,7 +202,6 @@ classdef SimVehicle
                 end
             end
         end
-        
         
         function greedyFailed = checkIfGreedyFailed(obj, xPos, yPos, greedyRSUIndex, rsuList, blockages)
             if greedyRSUIndex == -1
@@ -347,7 +352,6 @@ classdef SimVehicle
             timeIndex = find(obj.times == timeStep);
             viewedVehicleIDs = obj.vehiclesInView{timeIndex};
         end
-        
         
         function obj = runMatchingAtTime(obj, timeStep, algorithm, utilityFunction)
             fprintf("Matching at t=%d for vehicle %d\n", timeStep, obj.vehicleId);

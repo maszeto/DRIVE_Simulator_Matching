@@ -106,7 +106,9 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     matchingSim = matchingSim.addVehiclesByStruct(vehiclesStruct);
     matchingSim.vehicleIDsByTime = vehiclesIDsAtTime;
     matchingSim = matchingSim.addRSUs(potentialPos);
-    
+    matchingSim.potentialPos = potentialPos;
+    matchingSim.sortedIndexes = sortedIndexes;
+    matchingSim.rssAll = rssAll;
     matchingSim = matchingSim.fixVehiclesByTime();
     
     matchingSim.outputMap = outputMap;
@@ -122,9 +124,22 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     end
     
     greedyHandovers = matchingSim.getHandoversByVehicleIndex();
+    greedyData = matchingSim.getDataTransmittedByVehicle(.32)
+    matchingSim = matchingSim.clearRSUConnections(sumo.endTime);
+    matchingSim = matchingSim.clearBlockageTimes();
+    
+    %Running SMART Scenario
+    for i = 1:sumo.endTime
+        matchingSim = matchingSim.runSMARTScenario(i, -30);
+    end
+    matchingSim = matchingSim.createXYLinksV2I();
+%     matchingSim.viewSimulation();
+    smartHandovers = matchingSim.getHandoversByVehicleIndex();
     
     %Running for our method, reset connectedVehicles
+    smartData = matchingSim.getDataTransmittedByVehicle(.32)
     matchingSim = matchingSim.clearRSUConnections(sumo.endTime);
+    matchingSim = matchingSim.clearBlockageTimes();
     matchingSim = matchingSim.createRSUConnectionScheduleGreedy();
 
     for i = 1:sumo.endTime
@@ -135,10 +150,10 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     end
     
     goodHandovers = matchingSim.getHandoversByVehicleIndex();
-    
+    goodData = matchingSim.getDataTransmittedByVehicle(.1984)
     outputMap.RSUs = matchingSim.rsuList;
     matchingSim = matchingSim.createXYLinksV2I();
-    matchingSim.viewSimulation();
+%     matchingSim.viewSimulation();
     xyLinks = matchingSim.xyLinks;
     
     

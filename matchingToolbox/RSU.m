@@ -145,14 +145,8 @@ classdef RSU
             end
             
            %refine schedule 
-            
-            
             proposedPlan = obj.removeScheduledBlockages(timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs);
  
-        end
-        
-        function proposedPlan = reduceHandovers(obj, timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs)
-            
         end
         
         function blockageOccurences = findBlockageOccurences(obj, egoVeh, otherVehicles, timestep, depth, proposedPlan, rsuList)

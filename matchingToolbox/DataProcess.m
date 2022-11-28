@@ -28,7 +28,7 @@ classdef DataProcess
         end
 
         function maxHandoverImprovement = getMaxHandoverImprovement(good, bad)
-            maxHandoverImprovement = max(obj.handoverDiff(good, bad));
+            maxHandoverImprovement = max(DataProcess.getHandoverDifference(good, bad));
         end
         
         function handoverPlot = plotHandovers(good, bad)
