@@ -299,15 +299,49 @@ classdef SimVehicle
                 cur = [frontX, frontY];
                 prev = [prevX, prevY];
                 v = prev - cur;
-                vunit = v/norm(v);
-                rear = cur + length*vunit; %since we are moving in neg X dir
-                
+                if(v ~= 0)
+                    vunit = v/norm(v);
+                else
+                    dir = obj.getDirectionality(timeStep);
+                    %Getting unit vector of the front to rear
+                    if(dir == "N")
+                        vunit = [0 -1];
+                    elseif(dir == "E")
+                        vunit = [-1 0];
+                    elseif(dir == "S")
+                        vunit = [0 1];
+                    elseif(dir == "W")
+                        vunit = [1 0 ];
+                    end
+                end
+                rear = cur + length*vunit;
                 vunit2 = [vunit(2), -vunit(1)];%perpendicular unit vector
                 p0 = cur + (width/2)*vunit2;
                 p1 = cur - (width/2)*vunit2;
                 p2 = rear + (width/2)*vunit2;
                 p3 = rear - (width/2)*vunit2;
                 segments = [p0,p1;p0,p2;p3,p1;p3,p2];
+%                 else
+%                     %Vehicle is stopped
+%                     dir = obj.getDirectionality(timeStep);
+%                     
+%                     if(dir == "N")
+%                         rear = cur - [0 length];
+%                     elseif(dir == "E")
+%                         rear = cur - [length 0];
+%                     elseif(dir == "S")
+%                         rear = cur + [0 length];
+%                     elseif(dir == "W")
+%                         rear = cur + [length 0];
+%                     end
+%                     
+%                     p0 = cur + (width/2)*vunit2;
+%                     p1 = cur - (width/2)*vunit2;
+%                     p2 = rear + (width/2)*vunit2;
+%                     p3 = rear - (width/2)*vunit2;
+%                     segments = [p0,p1;p0,p2;p3,p1;p3,p2];
+%                     
+%                 end
             else
                 %Assume horizontal movement to the left
                 x1 = frontX + length;
@@ -323,6 +357,41 @@ classdef SimVehicle
             end
 
    
+        end
+        
+        function direction = getDirectionality(obj, timeStep)
+            %Returns which direction the vehicle is moving, N, E,S,W
+            % N = Positive Y, E = Positive X, S = Negative Y, W=Negative X
+            % So for X, positive means left (east), negative means right
+            % (wast)
+            timeIndex = obj.getTimeIndex(timeStep);
+            headingAngle = obj.angle(timeIndex);
+            
+            if(headingAngle > 315  || headingAngle < 45)
+                direction = "N";
+            elseif(headingAngle >= 45 && headingAngle < 135)
+                direction = "E";
+            elseif(headingAngle >= 135 && headingAngle < 225)
+                direction = "S";
+            else
+                direction = "W";
+            end
+        end
+        
+        
+        function direction = getXDirectionality(obj, timeStep)
+            %Returns which direction the vehicle is moving, N, E,S,W
+            % N = Positive Y, E = Positive X, S = Negative Y, W=Negative X
+            % So for X, positive means left (east), negative means right
+            % (wast)
+            timeIndex = obj.getTimeIndex(timeStep);
+            headingAngle = obj.angle(timeIndex);
+            
+            if(headingAngle > 0 && headingAngle <=180)
+                direction = 1;
+            else
+                direction = -1;
+            end
         end
         
         function rsuID = getRSUIDAtTime(obj, timeStep)
