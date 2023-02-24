@@ -58,14 +58,27 @@ classdef MatchingSim
             
         end
         
-        function obj = addRSUs(obj, potentialPos)
-            rsuList(length(potentialPos.mmWaves.pos)) = RSU(length(potentialPos.mmWaves.pos));
+        function obj = addRSUs(obj, potentialPos, chosenRSUpos)
+            global SIMULATOR
             
-            for i = 1:length(potentialPos.mmWaves.pos)
-                rsuList(i) = rsuList(i).initRSU(i, i, potentialPos.mmWaves.pos(i,2), ...
-                    potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3), length(obj.timesteps));
+            if(SIMULATOR.bsPlacement == "userdef")
+                rsuList(length(potentialPos.mmWaves.pos)) = RSU(length(potentialPos.mmWaves.pos));
+
+                for i = 1:length(potentialPos.mmWaves.pos)
+                    rsuList(i) = rsuList(i).initRSU(i, i, potentialPos.mmWaves.pos(i,2), ...
+                        potentialPos.mmWaves.pos(i,1), potentialPos.mmWaves.pos(i,3), length(obj.timesteps));
+                end
+                obj.rsuList = rsuList;
+            else
+                rsuList(length(chosenRSUpos.mmWaves)) = RSU(length(chosenRSUpos.mmWaves));
+
+                for i = 1:length(chosenRSUpos.mmWaves)
+                    chosenIndex = chosenRSUpos.mmWaves(i);
+                    rsuList(i) = rsuList(i).initRSU(i, i, potentialPos.mmWaves.pos(chosenIndex,2), ...
+                        potentialPos.mmWaves.pos(chosenIndex,1), potentialPos.mmWaves.pos(chosenIndex,3), length(obj.timesteps));
+                end
+                obj.rsuList = rsuList;
             end
-            obj.rsuList = rsuList;
 
         end
         
@@ -102,7 +115,13 @@ classdef MatchingSim
                 datarate=0;
                 return
             end
-            datarateIndex = obj.potentialPos.('mmWaves').linkBudget(rsuID).signalReceivedLos == rss;
+            datarateIndex = find(obj.potentialPos.('mmWaves').linkBudget(rsuID).signalReceivedLos == rss);
+            
+            if isempty(datarateIndex)
+                fprintf('Vehicle %d does not have LOS with RSU %d at time %d\n',vehicleID, rsuID, timeStep);
+                datarate = 0;
+                return
+            end
             datarate = obj.potentialPos.('mmWaves').linkBudget(rsuID).dataRateLos(datarateIndex);
             
         end
@@ -333,7 +352,7 @@ classdef MatchingSim
                 antennaPos = curVeh.getAntennaPosAtTime(timeStep);
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
-                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 75);
+                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 200);
                 [selectedRSUIndex, curVeh] = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages); 
                 if(~isempty(find(curVeh.blockageTimes == timeIndex)))
                     noBlockage = 0;
@@ -401,7 +420,7 @@ classdef MatchingSim
             antennaPos = curVeh.getAntennaPosAtTime(timeStep);
             xPos = antennaPos(1);
             yPos = antennaPos(2);
-            blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 75);
+            blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 200);
             potentialRSUs = [];
 
             for i = 1:length(obj.rsuList)
@@ -435,7 +454,7 @@ classdef MatchingSim
             % threshold 
             rss = obj.getRSSAtTime(curVeh.vehicleId, obj.rsuList(rsuIndex).id, timeStep);
             totalData = 0;
-            while(rss > threshold)
+            while(rss > threshold && timeStep <= 200)
                 rss = obj.getRSSAtTime(curVeh.vehicleId, obj.rsuList(rsuIndex).id, timeStep);
                 totalData = totalData + obj.calcDataRateAtTime(curVeh.vehicleId, obj.rsuList(rsuIndex).id, timeStep);
                 timeStep=timeStep+1;
@@ -453,18 +472,31 @@ classdef MatchingSim
             for j = 1:length(obj.vehicleIDsByTime{timeStep})
                 curVeh = obj.getVehicleByID(obj.vehicleIDsByTime{timeStep}(j));
                 timeIndex = curVeh.getTimeIndex(timeStep);
-                selectedRSUIndex = curVeh.RSUPlan(timeIndex);
+                
                 antennaPos = curVeh.getAntennaPosAtTime(timeStep);
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
-                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 75);
+                blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 200);
+                
+                if(curVeh.speed(timeIndex) == 0)
+                    [selectedRSUIndex, curVeh] = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages);
+                else
+                    selectedRSUIndex = curVeh.RSUPlan(timeIndex);
+                end
 
-                if (obj.connectionFailed(timeStep, curVeh.vehicleId, selectedRSUIndex))
+
+                if (obj.connectionFailed(timeStep, curVeh.vehicleId, selectedRSUIndex) && timeIndex > 1)
+                    
+                    if(selectedRSUIndex == curVeh.RSUs(timeIndex-1))
+                        fprintf("Link to %d interrupted for vehicle id %d at t=%d\n", ...
+                        selectedRSUIndex, curVeh.vehicleId, timeStep);
+                    end
                     badIndex = selectedRSUIndex;
                     [selectedRSUIndex, curVeh] = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages);
                     fprintf("Schedule for %d failed to predict blockage at t=%d (planned %d selected %d)\n", ...
                         curVeh.vehicleId, timeStep, badIndex, selectedRSUIndex);
                 end
+
                 obj = obj.updateRSUConnectionsAtTime(timeStep,selectedRSUIndex, curVeh.vehicleIndex);
                 curVeh.RSUs(timeIndex) = selectedRSUIndex;
                 curVeh.datarate(timeIndex) = obj.calcDataRateAtTime(curVeh.vehicleId, selectedRSUIndex, timeStep);
@@ -588,7 +620,7 @@ classdef MatchingSim
                 
                 distanceVehicle = pdist([vehicleX, vehicleY;curX, curY], 'euclidean');
             
-                if distanceVehicle<=range
+                if distanceVehicle<=range && distanceVehicle ~= 0
                     nearbyVehicles = [nearbyVehicles, obj.getVehicleByID(vehicleIDsAtT(i))];
                 end
             end
@@ -599,15 +631,20 @@ classdef MatchingSim
             curVeh = obj.getVehicleByID(vehicleID);
             nearbyVehicles = obj.getVehiclesNearby(time, vehicleID, range);
             potentialBlockages = [];
-            for i = 1:length(nearbyVehicles)
-                if (nearbyVehicles(i).vehicleType == 1)
-                    %Then it is a truck 
-                    potentialBlockages = [potentialBlockages; ...
-                                            nearbyVehicles(i).getSegments(time)];
+    
+            if(curVeh.vehicleType ~= 1)
+                for i = 1:length(nearbyVehicles)
+                    if (nearbyVehicles(i).vehicleType == 1)
+                        %Then it is a truck 
+                        potentialBlockages = [potentialBlockages; ...
+                                                nearbyVehicles(i).getSegments(time)];
+                    end
                 end
             end
+
+            buildingBlockages = obj.buildingLines;
             
-            blockages = potentialBlockages;
+            blockages = [potentialBlockages; buildingBlockages];
             
         end
         
@@ -649,11 +686,11 @@ classdef MatchingSim
             yPos = antennaPos(2);
             rsuX = obj.rsuList(rsuIndex).x;
             rsuY = obj.rsuList(rsuIndex).y;
-            blockages = obj.getPotentialBlockages(timestep, curVeh.vehicleId, 75);
+            blockages = obj.getPotentialBlockages(timestep, curVeh.vehicleId, 200);
             
             distance =  pdist([xPos,yPos;rsuX,rsuY], 'euclidean');
 
-            failed = (~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && curVeh.vehicleType ~= 1)...
+            failed = (~hasLOS(xPos, yPos, rsuX, rsuY, blockages))...
                 || distance > 200;
         end
         
@@ -678,6 +715,12 @@ classdef MatchingSim
                 end
             end 
             
+        end
+        
+        function obj = addBuildingLinesToRSUs(obj)
+            for i = 1:length(obj.rsuList)
+                obj.rsuList(i).buildingLines = obj.buildingLines;
+            end
         end
         
         function handovers = getHandoversByVehicleIndex(obj)
@@ -722,6 +765,7 @@ classdef MatchingSim
             clf;
             hold on;
             axis equal;
+            mapPrint(obj.outputMap)
             for i = 1:length(obj.rsuList)
                 xPos = obj.rsuList(i).x;
                 yPos = obj.rsuList(i).y;

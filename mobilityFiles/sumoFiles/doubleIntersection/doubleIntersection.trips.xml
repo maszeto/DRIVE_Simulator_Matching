@@ -1,0 +1,195 @@
+<!-- <routes>
+    Generated using the fixroutes.py script along with routes that were randomly generated from sumo
+</routes> -->
+
+<routes>
+    <vType id="pas" accel="0.8" decel="4.5" sigma="0.5" length="5" maxSpeed="70"/>
+    <vType id="amb" accel="0.8" decel="4.5" sigma="0.5" length="21.9456" maxSpeed="70" guiShape="truck/semitrailer"/>
+
+    <trip id="1" type="pas" depart="0.00" departLane="best" from="436790415" to="1072302865#0"/>
+    <trip id="152" type="amb" depart="0.00" departLane="best" from="436790415" to="1072302865#0"/>
+    <trip id="2" type="pas" depart="1.83" departLane="best" from="436790425" to="436790421#0"/>
+    <trip id="153" type="amb" depart="3.67" departLane="best" departSpeed="max" from="436799406" to="391847010"/>
+    <trip id="3" type="pas" depart="3.67" departLane="best" from="436790244" to="436790407"/>
+    <trip id="4" type="pas" depart="4.58" departLane="best" departSpeed="max" from="-391847010" to="436790231#0"/>
+    <trip id="5" type="pas" depart="5.50" departLane="best" from="436790429#0" to="436790423"/>
+    <trip id="6" type="pas" depart="6.42" departLane="best" from="437457246" to="436790278"/>
+    <trip id="154" type="amb" depart="7.33" departLane="best" from="436790244" to="436790303"/>
+    <trip id="7" type="pas" depart="8.25" departLane="best" from="436790429#0" to="436790423"/>
+    <trip id="8" type="pas" depart="9.17" departLane="best" from="436790410" to="437457248"/>
+    <trip id="9" type="pas" depart="10.08" departLane="best" from="436790431#0" to="436790417"/>
+    <trip id="10" type="pas" depart="11.00" departLane="best" from="436790435#0" to="436790415"/>
+    <trip id="11" type="pas" depart="11.92" departLane="best" from="436790419" to="391847010"/>
+    <trip id="12" type="pas" depart="12.83" departLane="best" from="436790248" to="436790267#0"/>
+    <trip id="13" type="pas" depart="14.67" departLane="best" from="1072302865#0" to="436790267#0"/>
+    <trip id="14" type="pas" depart="15.58" departLane="best" from="436790415" to="436790278"/>
+    <trip id="15" type="pas" depart="17.42" departLane="best" departSpeed="max" from="436790260" to="436799405"/>
+    <trip id="16" type="pas" depart="18.34" departLane="best" from="436790415-AddedOffRampEdge" to="436790416"/>
+    <trip id="155" type="amb" depart="18.34" departLane="best" from="436790269" to="436786895"/>
+    <trip id="17" type="pas" depart="19.25" departLane="best" departSpeed="max" from="436786890" to="436790423"/>
+    <trip id="18" type="pas" depart="20.17" departLane="best" departSpeed="max" from="436786890" to="436790278"/>
+    <trip id="19" type="pas" depart="21.09" departLane="best" from="704095590#0" to="436790418"/>
+    <trip id="20" type="pas" depart="22.00" departLane="best" from="436790411" to="436790423"/>
+    <trip id="21" type="pas" depart="22.92" departLane="best" from="436790248" to="1072302867#0"/>
+    <trip id="22" type="pas" depart="23.84" departLane="best" from="436790243" to="437457243"/>
+    <trip id="23" type="pas" depart="25.67" departLane="best" from="436790416" to="436790282"/>
+    <trip id="156" type="amb" depart="25.67" departLane="best" from="436790437" to="436790415-AddedOffRampEdge"/>
+    <trip id="24" type="pas" depart="27.50" departLane="best" departSpeed="max" from="436790260" to="436790259"/>
+    <trip id="25" type="pas" depart="29.34" departLane="best" from="704095590#0" to="436790407"/>
+    <trip id="26" type="pas" depart="31.17" departLane="best" departSpeed="max" from="-391847010" to="436790278"/>
+    <trip id="27" type="pas" depart="32.09" departLane="best" from="704095590#0" to="436790408#0"/>
+    <trip id="28" type="pas" depart="33.00" departLane="best" from="437457248" to="436790435#0"/>
+    <trip id="157" type="amb" depart="33.00" departLane="best" from="436790407" to="437457252"/>
+    <trip id="29" type="pas" depart="33.92" departLane="best" departSpeed="max" from="-391847010" to="436790423"/>
+    <trip id="30" type="pas" depart="34.84" departLane="best" from="436790417" to="436790409"/>
+    <trip id="31" type="pas" depart="35.75" departLane="best" departSpeed="max" from="436790260" to="436790418"/>
+    <trip id="32" type="pas" depart="38.50" departLane="best" departSpeed="max" from="436799406" to="436790435#2"/>
+    <trip id="33" type="pas" depart="39.42" departLane="best" from="436790261#0" to="436790418"/>
+    <trip id="34" type="pas" depart="40.34" departLane="best" departSpeed="max" from="436790414" to="436786895"/>
+    <trip id="158" type="amb" depart="40.34" departLane="best" from="436790435#0" to="436790417"/>
+    <trip id="35" type="pas" depart="41.25" departLane="best" from="436790427#0" to="436790409"/>
+    <trip id="36" type="pas" depart="42.17" departLane="best" from="436790428#0" to="436790408#0"/>
+    <trip id="37" type="pas" depart="44.00" departLane="best" departSpeed="max" from="-391847010" to="436799405"/>
+    <trip id="38" type="pas" depart="44.92" departLane="best" from="436790263#0" to="391847010"/>
+    <trip id="39" type="pas" depart="45.84" departLane="best" departSpeed="max" from="-391847010" to="436790427#0"/>
+    <trip id="40" type="pas" depart="46.75" departLane="best" from="436790427#0" to="436786895"/>
+    <trip id="41" type="pas" depart="48.59" departLane="best" departSpeed="max" from="436790260" to="436790435#2"/>
+    <trip id="42" type="pas" depart="50.42" departLane="best" from="436790410" to="436790423"/>
+    <trip id="43" type="pas" depart="51.34" departLane="best" from="704095590#0" to="436790419"/>
+    <trip id="159" type="amb" depart="51.34" departLane="best" departSpeed="max" from="436790414" to="436790278"/>
+    <trip id="44" type="pas" depart="52.25" departLane="best" departSpeed="max" from="436790305" to="436790407"/>
+    <trip id="45" type="pas" depart="55.01" departLane="best" departSpeed="max" from="-391847010" to="436790417"/>
+    <trip id="46" type="pas" depart="55.92" departLane="best" from="436790248" to="436799405"/>
+    <trip id="47" type="pas" depart="56.84" departLane="best" from="436790435#0" to="391847010"/>
+    <trip id="48" type="pas" depart="57.76" departLane="best" from="436790250" to="436790420"/>
+    <trip id="49" type="pas" depart="58.67" departLane="best" from="436790243" to="436786895"/>
+    <trip id="160" type="amb" depart="58.67" departLane="best" departSpeed="max" from="436790260" to="437457243"/>
+    <trip id="50" type="pas" depart="59.59" departLane="best" departSpeed="max" from="436799406" to="436790411"/>
+    <trip id="51" type="pas" depart="60.51" departLane="best" from="436790300#0" to="436790278"/>
+    <trip id="52" type="pas" depart="62.34" departLane="best" from="436790259" to="436799405"/>
+    <trip id="161" type="amb" depart="62.34" departLane="best" from="436790409" to="436790423"/>
+    <trip id="53" type="pas" depart="63.26" departLane="best" departSpeed="max" from="436790305" to="436790435#0"/>
+    <trip id="54" type="pas" depart="64.17" departLane="best" from="436790411" to="391847010"/>
+    <trip id="55" type="pas" depart="65.09" departLane="best" from="704095590#0" to="436790432#0"/>
+    <trip id="56" type="pas" depart="66.01" departLane="best" from="437457248" to="436799405"/>
+    <trip id="162" type="amb" depart="66.01" departLane="best" from="436790435#2" to="436790429#0"/>
+    <trip id="57" type="pas" depart="66.92" departLane="best" from="436790296" to="391847010"/>
+    <trip id="58" type="pas" depart="68.76" departLane="best" from="437457246" to="704095590#0"/>
+    <trip id="59" type="pas" depart="69.67" departLane="best" from="436790411" to="436790423"/>
+    <trip id="163" type="amb" depart="69.67" departLane="best" from="436790248" to="1072302865#0"/>
+    <trip id="60" type="pas" depart="70.59" departLane="best" departSpeed="max" from="436786890" to="436790267#0"/>
+    <trip id="61" type="pas" depart="71.51" departLane="best" from="437457248" to="436790415"/>
+    <trip id="62" type="pas" depart="73.34" departLane="best" departSpeed="max" from="-391847010" to="436790415"/>
+    <trip id="164" type="amb" depart="73.34" departLane="best" from="436790244" to="437457243"/>
+    <trip id="63" type="pas" depart="74.26" departLane="best" from="436790408#0" to="436790433#0"/>
+    <trip id="64" type="pas" depart="76.09" departLane="best" departSpeed="max" from="436790414" to="436790421#0"/>
+    <trip id="65" type="pas" depart="77.01" departLane="best" from="436790250" to="436786895"/>
+    <trip id="165" type="amb" depart="77.01" departLane="best" from="436799399" to="436790267#0"/>
+    <trip id="66" type="pas" depart="78.84" departLane="best" departSpeed="max" from="436790414" to="436790417"/>
+    <trip id="67" type="pas" depart="80.67" departLane="best" from="436790409" to="436799405"/>
+    <trip id="166" type="amb" depart="80.67" departLane="best" from="436790415-AddedOffRampEdge" to="436790278"/>
+    <trip id="68" type="pas" depart="81.59" departLane="best" from="436790234" to="436790423"/>
+    <trip id="69" type="pas" depart="82.51" departLane="best" from="436790250" to="436790282"/>
+    <trip id="70" type="pas" depart="83.42" departLane="best" from="436790417" to="436790267#0"/>
+    <trip id="71" type="pas" depart="84.34" departLane="best" from="704095590#0" to="704095590#0"/>
+    <trip id="72" type="pas" depart="86.17" departLane="best" departSpeed="max" from="436790260" to="436799405"/>
+    <trip id="73" type="pas" depart="87.09" departLane="best" from="436790437" to="436790437"/>
+    <trip id="74" type="pas" depart="88.01" departLane="best" departSpeed="max" from="436790414" to="529875454"/>
+    <trip id="75" type="pas" depart="88.92" departLane="best" from="436790415-AddedOffRampEdge" to="-436790313"/>
+    <trip id="76" type="pas" depart="89.84" departLane="best" from="436790430" to="436790267#0"/>
+    <trip id="77" type="pas" depart="90.76" departLane="best" from="436790416" to="436799405"/>
+    <trip id="78" type="pas" depart="91.68" departLane="best" departSpeed="max" from="436790260" to="436790416"/>
+    <trip id="79" type="pas" depart="94.43" departLane="best" from="436790407" to="436799405"/>
+    <trip id="80" type="pas" depart="96.26" departLane="best" departSpeed="max" from="-391847010" to="436790427#0"/>
+    <trip id="81" type="pas" depart="98.09" departLane="best" departSpeed="max" from="436790305" to="-436790313"/>
+    <trip id="82" type="pas" depart="99.01" departLane="best" departSpeed="max" from="436799406" to="436790409"/>
+    <trip id="167" type="amb" depart="99.01" departLane="best" from="436790431#0" to="436790282"/>
+    <trip id="83" type="pas" depart="100.84" departLane="best" from="436790429#0" to="436790435#0"/>
+    <trip id="84" type="pas" depart="101.76" departLane="best" from="436790259" to="436786895"/>
+    <trip id="85" type="pas" depart="102.68" departLane="best" from="436790428#0" to="436790437"/>
+    <trip id="168" type="amb" depart="102.68" departLane="best" departSpeed="max" from="-391847010" to="436790423"/>
+    <trip id="86" type="pas" depart="103.59" departLane="best" departSpeed="max" from="436786890" to="436799405"/>
+    <trip id="87" type="pas" depart="104.51" departLane="best" from="436790435#0" to="437457248"/>
+    <trip id="88" type="pas" depart="105.43" departLane="best" departSpeed="max" from="-391847010" to="436790425"/>
+    <trip id="169" type="amb" depart="106.34" departLane="best" from="436790418" to="436790407"/>
+    <trip id="89" type="pas" depart="107.26" departLane="best" from="436790429#0" to="436790435#0"/>
+    <trip id="90" type="pas" depart="109.09" departLane="best" from="436790428#0" to="436786895"/>
+    <trip id="91" type="pas" depart="110.01" departLane="best" from="436790244" to="436790430"/>
+    <trip id="170" type="amb" depart="110.01" departLane="best" departSpeed="max" from="436790260" to="436790419"/>
+    <trip id="92" type="pas" depart="110.93" departLane="best" departSpeed="max" from="436790305" to="436790267#0"/>
+    <trip id="93" type="pas" depart="112.76" departLane="best" departSpeed="max" from="-391847010" to="436790231#0"/>
+    <trip id="94" type="pas" depart="113.68" departLane="best" from="436790274" to="436790435#0"/>
+    <trip id="95" type="pas" depart="114.59" departLane="best" from="437457248" to="436790267#0"/>
+    <trip id="96" type="pas" depart="115.51" departLane="best" from="436790415-AddedOffRampEdge" to="436790282"/>
+    <trip id="97" type="pas" depart="116.43" departLane="best" departSpeed="max" from="436799406" to="436786895"/>
+    <trip id="171" type="amb" depart="117.34" departLane="best" departSpeed="max" from="436790305" to="436790231#0"/>
+    <trip id="98" type="pas" depart="119.18" departLane="best" departSpeed="max" from="436790414" to="436790407"/>
+    <trip id="99" type="pas" depart="121.01" departLane="best" departSpeed="max" from="436790260" to="436790423"/>
+    <trip id="172" type="amb" depart="121.01" departLane="best" departSpeed="max" from="436790260" to="436790419"/>
+    <trip id="100" type="pas" depart="121.93" departLane="best" departSpeed="max" from="-391847010" to="436799405"/>
+    <trip id="101" type="pas" depart="122.84" departLane="best" from="436790410" to="436790423"/>
+    <trip id="102" type="pas" depart="123.76" departLane="best" from="436790425" to="436790421#0"/>
+    <trip id="103" type="pas" depart="124.68" departLane="best" from="436790287" to="391847010"/>
+    <trip id="173" type="amb" depart="124.68" departLane="best" departSpeed="max" from="436790414" to="436786895"/>
+    <trip id="104" type="pas" depart="126.51" departLane="best" from="436790269" to="436790433#0"/>
+    <trip id="105" type="pas" depart="127.43" departLane="best" from="436790420" to="436790267#0"/>
+    <trip id="106" type="pas" depart="128.35" departLane="best" from="436790263#0" to="436790286"/>
+    <trip id="174" type="amb" depart="128.35" departLane="best" from="436790428#0" to="436790408#0"/>
+    <trip id="107" type="pas" depart="129.26" departLane="best" from="436790300#0" to="436790267#0"/>
+    <trip id="108" type="pas" depart="130.18" departLane="best" from="437457243" to="436790421#0"/>
+    <trip id="109" type="pas" depart="131.10" departLane="best" from="436799399" to="436790416"/>
+    <trip id="110" type="pas" depart="132.01" departLane="best" from="436790263#0" to="436790409"/>
+    <trip id="175" type="amb" depart="132.01" departLane="best" departSpeed="max" from="-391847010" to="436790267#0"/>
+    <trip id="111" type="pas" depart="132.93" departLane="best" departSpeed="max" from="-391847010" to="436790267#0"/>
+    <trip id="112" type="pas" depart="133.85" departLane="best" departSpeed="max" from="436790305" to="436790415"/>
+    <trip id="176" type="amb" depart="135.68" departLane="best" departSpeed="max" from="-391847010" to="436799405"/>
+    <trip id="113" type="pas" depart="136.60" departLane="best" from="436790415" to="436790278"/>
+    <trip id="177" type="amb" depart="139.35" departLane="best" departSpeed="max" from="436790260" to="391847010"/>
+    <trip id="114" type="pas" depart="140.26" departLane="best" from="436790250" to="436790303"/>
+    <trip id="115" type="pas" depart="143.01" departLane="best" from="436790416" to="-436790313"/>
+    <trip id="116" type="pas" depart="144.85" departLane="best" from="436790409" to="391847010"/>
+    <trip id="117" type="pas" depart="145.76" departLane="best" from="436790259" to="436790433#0"/>
+    <trip id="118" type="pas" depart="146.68" departLane="best" departSpeed="max" from="436790305" to="436790429#0"/>
+    <trip id="178" type="amb" depart="146.68" departLane="best" from="436790428#0" to="436786895"/>
+    <trip id="119" type="pas" depart="147.60" departLane="best" from="436790416" to="529875454"/>
+    <trip id="120" type="pas" depart="148.51" departLane="best" departSpeed="max" from="436790414" to="437457243"/>
+    <trip id="121" type="pas" depart="150.35" departLane="best" from="436790420" to="436790406"/>
+    <trip id="179" type="amb" depart="150.35" departLane="best" departSpeed="max" from="436790305" to="436790409"/>
+    <trip id="122" type="pas" depart="151.26" departLane="best" from="436799399" to="436790425"/>
+    <trip id="123" type="pas" depart="152.18" departLane="best" from="436790259" to="436790418"/>
+    <trip id="124" type="pas" depart="153.10" departLane="best" from="436790427#0" to="436790408#0"/>
+    <trip id="125" type="pas" depart="154.01" departLane="best" departSpeed="max" from="436790414" to="436790267#0"/>
+    <trip id="126" type="pas" depart="154.93" departLane="best" from="-436790313" to="436790267#0"/>
+    <trip id="127" type="pas" depart="156.76" departLane="best" from="436790410" to="436786895"/>
+    <trip id="128" type="pas" depart="157.68" departLane="best" from="436790248" to="436790423"/>
+    <trip id="129" type="pas" depart="158.60" departLane="best" from="436790419" to="391847010"/>
+    <trip id="130" type="pas" depart="159.51" departLane="best" from="436790300#0" to="436790409"/>
+    <trip id="180" type="amb" depart="161.35" departLane="best" from="436790300#0" to="436790406"/>
+    <trip id="131" type="pas" depart="165.02" departLane="best" from="436790410" to="436790416"/>
+    <trip id="132" type="pas" depart="165.93" departLane="best" departSpeed="max" from="436790305" to="1072302865#0"/>
+    <trip id="133" type="pas" depart="167.77" departLane="best" departSpeed="max" from="436790414" to="1072302865#0"/>
+    <trip id="134" type="pas" depart="168.68" departLane="best" departSpeed="max" from="-391847010" to="436790418"/>
+    <trip id="181" type="amb" depart="168.68" departLane="best" from="-529875454" to="436790418"/>
+    <trip id="135" type="pas" depart="169.60" departLane="best" departSpeed="max" from="-391847010" to="436790278"/>
+    <trip id="136" type="pas" depart="171.43" departLane="best" from="436790427#0" to="436790278"/>
+    <trip id="137" type="pas" depart="172.35" departLane="best" from="436790426" to="436790431#0"/>
+    <trip id="138" type="pas" depart="173.27" departLane="best" from="436790259" to="436786884"/>
+    <trip id="139" type="pas" depart="174.18" departLane="best" departSpeed="max" from="-391847010" to="436790409"/>
+    <trip id="140" type="pas" depart="175.10" departLane="best" from="704095590#0" to="436790278"/>
+    <trip id="182" type="amb" depart="176.02" departLane="best" from="436790244" to="436786895"/>
+    <trip id="141" type="pas" depart="178.77" departLane="best" departSpeed="max" from="-391847010" to="436786895"/>
+    <trip id="142" type="pas" depart="179.68" departLane="best" departSpeed="max" from="436786890" to="436790421#0"/>
+    <trip id="183" type="amb" depart="179.68" departLane="best" from="436790425" to="436790423"/>
+    <trip id="143" type="pas" depart="180.60" departLane="best" from="436790418" to="436790427#0"/>
+    <trip id="144" type="pas" depart="181.52" departLane="best" departSpeed="max" from="436786890" to="436790416"/>
+    <trip id="145" type="pas" depart="182.43" departLane="best" from="436790426" to="436786895"/>
+    <trip id="146" type="pas" depart="183.35" departLane="best" from="436790430" to="437457248"/>
+    <trip id="147" type="pas" depart="184.27" departLane="best" from="436790269" to="436790421#0"/>
+    <trip id="148" type="pas" depart="185.18" departLane="best" from="437457246" to="436790282"/>
+    <trip id="149" type="pas" depart="186.10" departLane="best" from="436790418" to="436790417"/>
+    <trip id="150" type="pas" depart="187.02" departLane="best" from="1072302865#0" to="436790427#0"/>
+    <trip id="151" type="pas" depart="188.85" departLane="best" from="436790428#0" to="436790278"/>
+    <trip id="184" type="amb" depart="190.68" departLane="best" from="436790296" to="436790267#0"/>
+    <trip id="185" type="amb" depart="198.02" departLane="best" from="436790409" to="391847010"/>
+
+</routes>

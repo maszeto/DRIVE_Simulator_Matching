@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<!--
+
+POIs for edges:
+	[436799406,436790269,436799399,436790234,436790244,436790263,436790267]
+
+on network:
+	C:\Users\Matthew\Documents\MPS\DRIVE_Simulator_Matching\mobilityFiles\sumoFiles\doubleIntersection\doubleIntersection.net.xml
+-->
+
+<POIs>
+    <poi id="436790269-1" type="default" color="1,0,0" layer="0" x="1780.44" y="784.26"/>
+    <poi id="436790234-1" type="default" color="1,0,0" layer="0" x="1779.11" y="609.27"/>
+</POIs>

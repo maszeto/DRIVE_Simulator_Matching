@@ -9,6 +9,7 @@ classdef RSU
         y           % Y position
         height      % Height I think
         connectedVehicles %List of connected vehicles at T
+        buildingLines %Building Lines from matching sim (static blockages)
     end
     
     methods
@@ -128,8 +129,19 @@ classdef RSU
                 badIndex = badConnectionIndices(i);
                 badRSU = blockageOccurences(badIndex);
                 badRSUs = [badRSUs, badRSU];
-                goodRSU = egoVeh.getNearestRSUWithGreedyIgnore(...
-                        egoVeh.getXPosAtTime(timestep + badIndex), egoVeh.getYPosAtTime(timestep+badIndex), rsuList, badRSUs);
+                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + badIndex); obj.buildingLines];
+                antennaPos = egoVeh.getAntennaPosAtTime(timestep + badIndex);
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                
+                goodRSU = egoVeh.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
+                
+                if(goodRSU == -1)
+                    %Unavoidable outage, but at least we predicted it
+                    %fprintf("Predicted Outage for vehicle %d at t=%d\n", egoVeh.vehicleId, timestep);
+                    
+                end
+                
                 %try and replace all 
                 badSelections = find(proposedPlan(1:badIndex) == badRSU);
                 improvedPlan = proposedPlan;
@@ -137,7 +149,7 @@ classdef RSU
                     improvedPlan(badSelections(j)) = goodRSU;
                 end
                 newBlockageOccurences = obj.findBlockageOccurences(egoVeh, otherVehicles, timestep, badIndex, improvedPlan, rsuList);
-                if(~isempty(find(newBlockageOccurences>0)))
+                if(~isempty(find(newBlockageOccurences>0)) || goodRSU == -1)
                     proposedPlan(badIndex) = goodRSU;
                 else
                     proposedPlan = improvedPlan;
@@ -155,8 +167,14 @@ classdef RSU
             %find Ideal schedule, plan, track if a blockage occurs  
             curDepth = 1;
             while curDepth <= depth
-                blockages = obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth);
-                antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+                
+                if rand <= .25 && curDepth > 8
+                    antennaPos = egoVeh.getGuessedAntennaPosAtTime(timestep + curDepth);
+                else
+                    antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                end
+                    
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
                 proposedRSU = proposedPlan(curDepth);

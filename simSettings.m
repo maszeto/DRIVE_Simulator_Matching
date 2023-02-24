@@ -27,7 +27,7 @@ SIMULATOR.map = 1; % give 0 to parse an OSM map, 1 to parse map from SUMO
 SIMULATOR.load = 2; % Choose if the preprocessed files will be loaded - 0 process from scratch, 1 ask user, 2 load all (if existing)
 SIMULATOR.pathPreprocessed = './mobilityFiles/preprocessedFiles';
 SIMULATOR.gaSeed = 5; % The seed to be used for the Genetic Algorithm (for the BS placement)
-SIMULATOR.randomToChoose = 20; % The number of random basestations to be chosen (when using the random BS placement function)
+SIMULATOR.randomToChoose = 5; % The number of random basestations to be chosen (when using the random BS placement function)
 
 %% SUMO Settings
 sumo.routeFile = './mobilityFiles/sumoFiles/tenWest/tenWest.sumocfg';
@@ -52,7 +52,7 @@ sumo.vehicleTypes= {'Ambulance';'Passenger'};
 sumo.vehicleTypeAbbreviation= {'amb' ; 'pas'};
 
 %% Map Settings1
-map.file = './mobilityFiles/sumoFiles/tenWest/tenWest.osm.xml'; % manhattanLarge - londonSmall - smartJunction
+map.file = './mobilityFiles/sumoFiles/tenWest/tenWest.osm.xml'; % manhattanLarge - londonSmall - smartJunction - tenWest - doubleIntersection
 map.simplificationTolerance = 10;
 map.edgeTolerance = 100;
 map.tileSize = 16; % for square tiles: length of side - for hexagons: length of short diagonal

@@ -77,11 +77,15 @@ classdef SimVehicle
             
             for i = 1:length(obj.times)
                 %For each timestep 
-                xPos = obj.x(i);
-                yPos = obj.y(i);
-                speed = 29; %m/s 
-                [xPos, yPos] = obj.getExpectedPositionAtTimeIndex(i, speed);
-                
+%                 xPos = obj.x(i);
+%                 yPos = obj.y(i);
+%                 speed = 29; %m/s 
+%                 [xPos, yPos] = obj.getExpectedPositionAtTimeIndex(i, speed);
+                timeStep = obj.times(i);
+                antennaPos = obj.getAntennaPosAtTime(timeStep);
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+            
                 RSUs(i) = obj.findNearestRSUInLOS(xPos, yPos, rsuList, buildingLines);
             end
             obj.RSUs = RSUs;
@@ -97,6 +101,8 @@ classdef SimVehicle
                 yPos = obj.y(i);
                 RSUs(i) = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
             end
+            
+            obj.RSUs = RSUs;
             obj.RSUPlan = RSUs;
         end
         
@@ -131,11 +137,12 @@ classdef SimVehicle
                 return;
             end
             
-            if(obj.vehicleType == 1)
-                %Truck, so no chance for blockage
-                selectedRSUIndex = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
-                return;
-            end
+            %below if statement is no longer true in city scenario
+%             if(obj.vehicleType == 1)
+%                 %Truck, so no chance for blockage
+%                 selectedRSUIndex = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
+%                 return;
+%             end
             
             %prioritize current connection 
             prevRSU = obj.RSUs(timeIndex-1);
@@ -149,9 +156,9 @@ classdef SimVehicle
                 selectedRSUIndex = obj.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
             end
             
-            if ~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && prevRSU == greedyRSUIndex && obj.vehicleType==2
+            if ~hasLOS(xPos, yPos, rsuX, rsuY, blockages) && prevRSU == greedyRSUIndex
                 obj.blockageTimes = [obj.blockageTimes, timeIndex];
-                fprintf("t=%f v=%d greedy connection blocked\n", timeStep, obj.vehicleId);
+                fprintf("t=%f v=%d greedy connection to RSU %d blocked\n", timeStep, obj.vehicleId, prevRSU);
             end
         
 
@@ -188,7 +195,7 @@ classdef SimVehicle
             end
         end
         
-        function nearestRSUIndex = getNearestRSUWithGreedyIgnore(obj, xPos, yPos, rsuList, badRSUs)
+        function nearestRSUIndex = getNearestRSUWithGreedyIgnore(obj, xPos, yPos, rsuList, badRSUs, blockages)
             nearestRSUIndex = -1;
             distanceToClosestRSU = 9999;
             maxTxDistance = 200;
@@ -196,7 +203,7 @@ classdef SimVehicle
                 x2 = rsuList(i).x;
                 y2 = rsuList(i).y;
                 distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
-                if distance < distanceToClosestRSU && distance < maxTxDistance && isempty(find(badRSUs == i))
+                if hasLOS(xPos, yPos, x2, y2, blockages)&& distance < distanceToClosestRSU && distance < maxTxDistance && isempty(find(badRSUs == i))
                         nearestRSUIndex = rsuList(i).index;
                         distanceToClosestRSU = distance;
                 end
@@ -225,7 +232,7 @@ classdef SimVehicle
                 y2 = rsuList(i).y;
                 distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
                 if distance < distanceToClosestRSU && distance < maxTxDistance
-                    if (hasLOS(xPos, yPos, x2, y2, blockages) || obj.vehicleType==1)
+                    if (hasLOS(xPos, yPos, x2, y2, blockages))
                         nearestRSUIndex = i;
                         distanceToClosestRSU = distance;
                     end
@@ -236,31 +243,38 @@ classdef SimVehicle
         end
         
         function antennaPos = getAntennaPosAtTime(obj, timeStep)
-            if(obj.vehicleType==1) %truck
-                length = 21.9456;
-                width = 2.5908;
-            else 
-                %Passenger 
-                length = 5;
-                width = 1.6;
-            end
-            timeIndex = obj.getTimeIndex(timeStep);
-            %position is of the front bumper
-            frontX = obj.x(timeIndex);
-            frontY = obj.y(timeIndex);
+
+            points = obj.getSegments(timeStep);
             
-            if (timeIndex > 1)
-                prevX = obj.x(timeIndex-1);
-                prevY = obj.y(timeIndex-1);
-                cur = [frontX, frontY];
-                prev = [prevX, prevY];
-                v = prev - cur;
-                vunit = v/norm(v);
-                antennaPos = cur + (length/2)*vunit;
-            else
+            if(isempty(points))
+                frontX = obj.x(timeIndex);
+                frontY = obj.y(timeIndex);
                 antennaPos = [frontX, frontY];
+                return;
             end
             
+            %center is midpoint of diagonal 
+            p1 = points(1,1:2);
+            p2 = points(3,1:2);
+            x1 = p1(1);
+            x2 = p2(1);
+            y1 = p1(2);
+            y2 = p2(2);
+            
+            antennaPos = [(x1 + x2) / 2, (y1 + y2) / 2];
+         
+        end
+        
+        function guessedAntennaPos = getGuessedAntennaPosAtTime(obj, timeStep)
+            p0 = obj.getAntennaPosAtTime(timeStep - 2);
+            p1 = obj.getAntennaPosAtTime(timeStep - 1);
+            timeIndex = obj.getTimeIndex(timeStep);
+            v = p1 - p0;
+            vunit = v/norm(v);
+            pt = p0 + (obj.speed(timeIndex))*vunit;
+            xPosExpected = pt(1);
+            yPosExpected = pt(2);
+            guessedAntennaPos = [xPosExpected, yPosExpected];
         end
         
         function handoverNum = getHandovers(obj)
@@ -343,16 +357,16 @@ classdef SimVehicle
 %                     
 %                 end
             else
-                %Assume horizontal movement to the left
+                %Assume Nothing
                 x1 = frontX + length;
                 y1 = frontY + width/2;
                 y2 = frontY - width/2;
 
                 segments = [ ...
-                frontX, y1, frontX, y2;
-                x1, y1, x1, y2;
-                frontX, y1, x1, y1;
-                frontX, y2, x1, y2;
+                frontX, frontY, frontX, frontY;
+                frontX, frontY, frontX, frontY;
+                frontX, frontY, frontX, frontY;
+                frontX, frontY, frontX, frontY;
                 ];
             end
 

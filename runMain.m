@@ -61,7 +61,7 @@ function runMain( map, sumo, BS, linkBudget )
     elseif strcmp(SIMULATOR.scenario,'v2v')
         [ vehicles, pedestrians ] = runV2V(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile,losNlosStatusPerTile,initialRssAllV2V);
     elseif strcmp(SIMULATOR.scenario,'v2i')
-        [ vehicles, pedestrians, outputMap, xyLinks, matchingSim ] = runV2IScenarioInter(sumo,map,BS,outputMap,potentialBSPos,chosenRSUpos, tilesCovered,distancePerRAT,sortedIndexesPerRat,losNlosStatusPerRAT,initialRssAll, distanceBuildings, sortedIndexesBuildings, rssBuildings);
+        [ vehicles, pedestrians, outputMap, xyLinks, matchingSim ] = runV2IScenario(sumo,map,BS,outputMap,potentialBSPos,chosenRSUpos, tilesCovered,distancePerRAT,sortedIndexesPerRat,losNlosStatusPerRAT,initialRssAll, distanceBuildings, sortedIndexesBuildings, rssBuildings);
     elseif strcmp(SIMULATOR.scenario, 'matching')
         [ vehicles, pedestrians, xyLinks ] = runMatchingDistributed(sumo,map,BS,outputMap,distancePerTile,sortedIndicesPerTile);
     

@@ -38,6 +38,12 @@
     <vehicle id="9" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
     <vehicle id="17" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
     <vehicle id="18" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
-    <vehicle id="19" type="amb" route="route0" depart="2" departLane = "4" color="0,1,0"/>
+    <vehicle id="19" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="20" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="21" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="22" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="23" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="24" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
+    <vehicle id="25" type="amb" route="route0" depart="2" departLane = "2" color="0,1,0"/>
 
 </routes>
