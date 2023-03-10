@@ -145,7 +145,7 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     for i = 1:sumo.endTime
         
         matchingSim = matchingSim.connectVehiclesToRSU(i);
-        matchingSim = matchingSim.updateVehiclesSchedulesRSUPairs(i, 10);
+        matchingSim = matchingSim.updateVehiclesSchedules(i, 10);
         
     end
     
@@ -155,56 +155,7 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     matchingSim = matchingSim.createXYLinksV2I();
 %     matchingSim.viewSimulation();
     xyLinks = matchingSim.xyLinks;
-    
-    
-    
-%     % Start iterating for all the timesteps
-%     for i = 1:sumo.endTime
-%         vehicleIDs = traci.vehicle.getIDList();
-%         pedestrianIDs = traci.person.getIDList();
-%         timeStep = traci.simulation.getTime;
-%         fprintf('The timestep is: %f\n',timeStep)
-%         
-%         [ vehicleTimestep, pedestrianTimestep ] = getVehiclesAndPedestrians(sumo,vehicleIDs,pedestrianIDs,timeStep);
-%         vehicles = [ vehicles ; vehicleTimestep ];
-%         pedestrians = [ pedestrians ; pedestrianTimestep ];
-%         
-%         [distanceVehicleArea,idxVehicleArea,distancePedestrianArea,idxPedestrianArea,usersPerArea] = ...
-%             usersPerAreaCalculation(outputMap,vehicleTimestep,pedestrianTimestep);
-% 
-%         [distanceVehicleTile,idxVehicleTile,distancePedestrianTile,idxPedestrianTile] = ...
-%             nearbyTile(outputMap,vehicleTimestep,pedestrianTimestep);
-%         
-%        
-%         rssHighest = highestRSS.(BS.rats{2})(idxVehicleTile);
-%         bsServing = servingBSId.(BS.rats{2})(idxVehicleTile);
-%         losNlosLink = losNlos.(BS.rats{2})(idxVehicleTile);
-% 
-%         dataRateTmp = [];
-%         for l = 1:length(rssHighest)
-%             if bsServing(l)>=1
-%                 if losNlosLink(l) == 1
-%                     idx = potentialPos.(BS.rats{2}).linkBudget(bsServing(l)).signalReceivedLos == rssHighest(l);
-%                     dataRateTmp(l) = potentialPos.(BS.rats{2}).linkBudget(bsServing(l)).dataRateLos(idx);
-%                 else
-%                     idx = potentialPos.(BS.rats{2}).linkBudget(bsServing(l)).signalReceivedNLos == rssHighest(l);
-%                     dataRateTmp(l) = potentialPos.(BS.rats{2}).linkBudget(bsServing(l)).dataRateNLos(idx);
-%                 end
-%             else
-%                 dataRateTmp(l) = 0;
-%             end
-%         end
-%         dataRate{2}(timeStep) = mean(dataRateTmp);        
-% 
-%         
-%         % Progress to the timestep
-%         traci.simulationStep;
-%         
-%     end
-        
 
-%     fprintf('The average datarate for the mmWave communication plane is: %f Mbits/s\n',2,mean(dataRate{2})/10^6);
-    
     
     verbose('The entire SUMO mode took: %f seconds.', toc); 
 end

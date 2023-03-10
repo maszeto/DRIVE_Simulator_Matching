@@ -242,6 +242,19 @@ classdef SimVehicle
             %Think you could also do something like this > [[matchingSim.rsuList.x]' [matchingSim.rsuList.y]'] 
         end
         
+        function RSUs = getRSUsInRangeLOS(obj, xPos, yPos, rsuList, blockages)
+            maxTxDistance = 200;
+            RSUs = [];
+            for i = 1:length(rsuList)               
+                x2 = rsuList(i).x;
+                y2 = rsuList(i).y;
+                distance = abs(pdist([xPos,yPos;x2,y2], 'euclidean'));
+                if  distance <= maxTxDistance && hasLOS(xPos, yPos, x2, y2, blockages)
+                    RSUs=[RSUs,i];
+                end
+            end
+        end
+        
         function antennaPos = getAntennaPosAtTime(obj, timeStep)
 
             points = obj.getSegments(timeStep);
@@ -335,27 +348,6 @@ classdef SimVehicle
                 p2 = rear + (width/2)*vunit2;
                 p3 = rear - (width/2)*vunit2;
                 segments = [p0,p1;p0,p2;p3,p1;p3,p2];
-%                 else
-%                     %Vehicle is stopped
-%                     dir = obj.getDirectionality(timeStep);
-%                     
-%                     if(dir == "N")
-%                         rear = cur - [0 length];
-%                     elseif(dir == "E")
-%                         rear = cur - [length 0];
-%                     elseif(dir == "S")
-%                         rear = cur + [0 length];
-%                     elseif(dir == "W")
-%                         rear = cur + [length 0];
-%                     end
-%                     
-%                     p0 = cur + (width/2)*vunit2;
-%                     p1 = cur - (width/2)*vunit2;
-%                     p2 = rear + (width/2)*vunit2;
-%                     p3 = rear - (width/2)*vunit2;
-%                     segments = [p0,p1;p0,p2;p3,p1;p3,p2];
-%                     
-%                 end
             else
                 %Assume Nothing
                 x1 = frontX + length;

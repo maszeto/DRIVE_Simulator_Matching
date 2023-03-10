@@ -126,6 +126,33 @@ classdef MatchingSim
             
         end
         
+        function datarate = calcDataRateAtTimeNLOS(obj, vehicleID, rsuID, timeStep)
+            datarate = 0;
+            return;
+            
+%             if rsuID == -1
+%                 datarate = 0;
+%                 return
+%             end
+%             
+%             tile = obj.getVehicleTile(vehicleID, timeStep);
+%             tileIndex = find(obj.sortedIndexes{2}{rsuID} == tile);
+%             rss = obj.rssAll{2}{rsuID}(tileIndex);
+%             if isempty(rss)
+%                 datarate=0;
+%                 return
+%             end
+%             datarateIndex = find(obj.potentialPos.('mmWaves').linkBudget(rsuID).signalReceivedLos == rss);
+%             
+%             if isempty(datarateIndex)
+%                 fprintf('Vehicle %d does not have LOS with RSU %d at time %d\n',vehicleID, rsuID, timeStep);
+%                 datarate = 0;
+%                 return
+%             end
+%             datarate = obj.potentialPos.('mmWaves').linkBudget(rsuID).dataRateNLos(datarateIndex);
+            
+        end
+        
         function rss = getRSSAtTime(obj, vehicleID, rsuID, timeStep)
             if rsuID == -1
                 rss = -999999;
@@ -478,12 +505,12 @@ classdef MatchingSim
                 yPos = antennaPos(2);
                 blockages = obj.getPotentialBlockages(timeStep, curVeh.vehicleId, 200);
                 
-                if(curVeh.speed(timeIndex) == 0)
-                    [selectedRSUIndex, curVeh] = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages);
-                else
-                    selectedRSUIndex = curVeh.RSUPlan(timeIndex);
-                end
-
+%                 if(curVeh.speed(timeIndex) == 0)
+%                     [selectedRSUIndex, curVeh] = curVeh.selectRSUAtTime(timeStep, obj.rsuList, blockages);
+%                 else
+%                     selectedRSUIndex = curVeh.RSUPlan(timeIndex);
+%                 end
+                selectedRSUIndex = curVeh.RSUPlan(timeIndex);
 
                 if (obj.connectionFailed(timeStep, curVeh.vehicleId, selectedRSUIndex) && timeIndex > 1)
                     
@@ -528,7 +555,7 @@ classdef MatchingSim
                 for k = 1:length(connectedVehicles)
                     curVeh = obj.vehiclesByIndex(connectedVehicles(k));
                    obj.vehiclesByIndex(connectedVehicles(k)) = ...
-                       curRSU1.updateSchedule(timeStep, curVeh, otherVehicles, obj.rsuList, depth);
+                       curRSU1.updateScheduleMaxData(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj); %breaks OOP I'm pretty sure, oops
                 end
 
             end

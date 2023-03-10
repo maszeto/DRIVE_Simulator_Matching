@@ -114,6 +114,116 @@ classdef RSU
             simVeh = egoVeh;
         end
         
+        function simVeh = updateScheduleMaxData(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            timeIndex = egoVeh.getTimeIndex(timestep);     
+            maxTimestep = length(egoVeh.times);
+            if timeIndex + depth > maxTimestep
+                %return as much as possible 
+                depth = maxTimestep - timeIndex;
+            end
+            
+            proposedPlan = egoVeh.RSUPlan(timeIndex+1:timeIndex+depth);
+            
+            bestPlan = obj.findBestPlan(timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = bestPlan;
+            simVeh = egoVeh;
+        end
+        
+        function bestPlan = findBestPlan(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            
+            % Find potential RSUs at each timestep
+            potentialRSUs = {};
+            
+            for curDepth = 1:depth
+                
+                %Get vehicle position at that time
+                if rand <= .25 && curDepth >= 7
+                    antennaPos = egoVeh.getGuessedAntennaPosAtTime(timestep + curDepth);
+                else
+                    antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                end
+                
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                
+                potentialRSUs{curDepth} = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, []);
+            end
+            
+            % Calculate all potential schedules
+            potentialRSUs2 = potentialRSUs;
+            [potentialRSUs2{:}] = ndgrid(potentialRSUs{:});
+            potPlans = cell2mat(cellfun(@(m)m(:),potentialRSUs2,'uni',0));
+
+            % calculate best plan, check if LOS using blockages at each
+            % time to determine datarate
+            
+            bestPlan = obj.calcBestPlan(potPlans, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            %blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+            
+        end
+        
+        function bestPlan = calcBestPlan(obj, potPlans, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            
+            maxData = 0;
+            bestPlan = potPlans(1,1:depth);
+            for i = 1:length(potPlans)
+                curPlan = potPlans(i,1:depth);
+                curData = obj.estimateMaxDataPlan(curPlan, timestep, egoVeh, otherVehicles,rsuList, depth, matchingSim);
+                
+                if(curData > maxData)
+                    maxData = curData;
+                    bestPlan = curPlan;
+                end
+            end
+            
+        end
+        
+        function maxData = estimateMaxDataPlan(obj, curPlan, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            
+            totalData = 0;
+            prevRSUID = obj.index;
+            
+            for curDepth = 1:depth
+                totalData = totalData + obj.estimateMaxDataTime(prevRSUID,curPlan(curDepth), timestep+depth, egoVeh, otherVehicles, rsuList, matchingSim);
+            end
+            
+            maxData = totalData;
+        end
+        
+        function maxData = estimateMaxDataTime(obj, prevRSUID, curRSUID, curTime, egoVeh, otherVehicles, rsuList, matchingSim)
+            % Estimates the datarate for a given link with the following
+            % overheads
+            plannedOverhead = .1984; % Planned handover overhead in seconds
+            
+            antennaPos = egoVeh.getAntennaPosAtTime(curTime);
+            xPos = antennaPos(1);
+            yPos = antennaPos(2);
+            
+            xPos2 = rsuList(curRSUID).x;
+            yPos2 = rsuList(curRSUID).y;
+            
+            if(prevRSUID ~= curRSUID)
+                handover = 1;
+            else
+                handover = 0;
+            end
+            
+            blockages = [obj.getBlockagesFromVehicles(otherVehicles, curTime); obj.buildingLines];
+            
+            if(hasLOS(xPos,yPos,xPos2,yPos2,blockages))
+                datarate = matchingSim.calcDataRateAtTime(egoVeh.vehicleId, curRSUID, curTime);
+            else
+                datarate = matchingSim.calcDataRateAtTimeNLOS(egoVeh.vehicleId, curRSUID, curTime);
+            end
+            
+            maxData = datarate*(1- (handover * plannedOverhead));
+            
+            
+            
+        end
+        
         function proposedPlan = removeScheduledBlockages(obj, timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, badRSUs)
         
             %find when blockages occurs
