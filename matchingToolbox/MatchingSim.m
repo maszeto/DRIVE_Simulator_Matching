@@ -555,7 +555,7 @@ classdef MatchingSim
                 for k = 1:length(connectedVehicles)
                     curVeh = obj.vehiclesByIndex(connectedVehicles(k));
                    obj.vehiclesByIndex(connectedVehicles(k)) = ...
-                       curRSU1.updateScheduleMaxData(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj); %breaks OOP I'm pretty sure, oops
+                       curRSU1.updateScheduleGreedy(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj); %breaks OOP I'm pretty sure, oops
                 end
 
             end

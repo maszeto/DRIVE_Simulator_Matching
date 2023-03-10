@@ -114,7 +114,9 @@ classdef RSU
             simVeh = egoVeh;
         end
         
-        function simVeh = updateScheduleMaxData(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+        function simVeh = updateScheduleGreedy(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)            
+            %vehicle and other vehicles are objects
+            %depth is how many timesteps into the future
             timeIndex = egoVeh.getTimeIndex(timestep);     
             maxTimestep = length(egoVeh.times);
             if timeIndex + depth > maxTimestep
@@ -124,16 +126,19 @@ classdef RSU
             
             proposedPlan = egoVeh.RSUPlan(timeIndex+1:timeIndex+depth);
             
-            bestPlan = obj.findBestPlan(timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            greedyPlan = obj.getGreedyPlan(timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, matchingSim);
             
-            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = bestPlan;
+            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = greedyPlan;
             simVeh = egoVeh;
         end
         
-        function bestPlan = findBestPlan(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+        function greedyPlan = getGreedyPlan(obj, timestep, egoVeh, proposedPlan, otherVehicles, rsuList, depth, matchingSim)
             
-            % Find potential RSUs at each timestep
-            potentialRSUs = {};
+            % At each timestep, taking into account the previous selection,
+            % find the next best selection 
+            prevRSUID = obj.id;
+            
+            greedyPlan = proposedPlan;
             
             for curDepth = 1:depth
                 
@@ -147,20 +152,36 @@ classdef RSU
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
                 
-                potentialRSUs{curDepth} = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, []);
+                %Get environment info at that time
+                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+                
+                potentialRSUs = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, blockages);
+                
+                greedyPlan(curDepth) = obj.selectRSUGreedy(timestep+curDepth, egoVeh, otherVehicles, prevRSUID, potentialRSUs, rsuList, matchingSim);
+                
+                prevRSUID = greedyPlan(curDepth);
             end
             
-            % Calculate all potential schedules
-            potentialRSUs2 = potentialRSUs;
-            [potentialRSUs2{:}] = ndgrid(potentialRSUs{:});
-            potPlans = cell2mat(cellfun(@(m)m(:),potentialRSUs2,'uni',0));
-
-            % calculate best plan, check if LOS using blockages at each
-            % time to determine datarate
+        end
+        
+        function chosenRSU = selectRSUGreedy(obj, curTime, egoVeh, otherVehicles, prevRSUID, potentialRSUs, rsuList, matchingSim)
+            if(isempty(potentialRSUs))
+                chosenRSU = -1;
+                return;
+            end
             
-            bestPlan = obj.calcBestPlan(potPlans, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
-            
-            %blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+            maxData = 0;
+            chosenRSU = potentialRSUs(1);
+            for i = 1:length(potentialRSUs)
+               curRSUID = potentialRSUs(i);
+               
+               data = obj.estimateMaxDataTime(prevRSUID, curRSUID, curTime, egoVeh, otherVehicles, rsuList, matchingSim);
+               
+               if(data > maxData)
+                   maxData = data;
+                   chosenRSU = curRSUID;
+               end
+            end
             
         end
         
@@ -220,7 +241,55 @@ classdef RSU
             
             maxData = datarate*(1- (handover * plannedOverhead));
             
+        end
+        
+        function simVeh = updateScheduleMaxData(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            timeIndex = egoVeh.getTimeIndex(timestep);     
+            maxTimestep = length(egoVeh.times);
+            if timeIndex + depth > maxTimestep
+                %return as much as possible 
+                depth = maxTimestep - timeIndex;
+            end
             
+            proposedPlan = egoVeh.RSUPlan(timeIndex+1:timeIndex+depth);
+            
+            bestPlan = obj.findBestPlan(timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = bestPlan;
+            simVeh = egoVeh;
+        end
+        
+        function bestPlan = findBestPlan(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            
+            % Find potential RSUs at each timestep
+            potentialRSUs = {};
+            
+            for curDepth = 1:depth
+                
+                %Get vehicle position at that time
+                if rand <= .25 && curDepth >= 7
+                    antennaPos = egoVeh.getGuessedAntennaPosAtTime(timestep + curDepth);
+                else
+                    antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                end
+                
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                
+                potentialRSUs{curDepth} = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, []);
+            end
+            
+            % Calculate all potential schedules
+            potentialRSUs2 = potentialRSUs;
+            [potentialRSUs2{:}] = ndgrid(potentialRSUs{:});
+            potPlans = cell2mat(cellfun(@(m)m(:),potentialRSUs2,'uni',0));
+
+            % calculate best plan, check if LOS using blockages at each
+            % time to determine datarate
+            
+            bestPlan = obj.calcBestPlan(potPlans, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            %blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
             
         end
         
