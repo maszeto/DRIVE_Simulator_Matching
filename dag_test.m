@@ -1,6 +1,7 @@
 
-
+%code using string names 
 % total rsus is the sum of potential rsus at each timestep 
+% guh{2,1} = 1
 potRSUs = {
     [1,2,3,4,5],
     [1,2,3,4],
@@ -9,17 +10,59 @@ potRSUs = {
     [5],
     [5,6,7],
     [6,7],
-    [8]
+    [8],
+    [8,9],
+    [8,9]
     };
-cellsz = cellfun(@size,A,'uni',false); 
-%define adjacency matrix
+potRSUs = [{[1]}; potRSUs; {[99]}]; % add a start and stop node
 
-names = [];
-for i = 1:50
-    names = [names, num2str(i) + "_" + num2str(idivide(int16(i),5))];
+nNum = 0; %vertex num
+nNumTime = [];
+nNames = []; %vertex names
+nIDs = []; %ID vertex corresponds to
+
+for i = 1:size(potRSUs)
+    nNum = nNum + length(potRSUs{i});
+    nNumTime = [nNumTime, length(potRSUs{i})];
+    for j = 1:length(potRSUs{i})
+        nNames = [nNames, num2str(potRSUs{i}(j)) + "_{" + num2str(i-1) + "}"];
+        nIDs = [nIDs, potRSUs{i}(j)];
+    end
 end
-vDAG = digraph(A, names);
 
-plot(vDAG,'Layout','force');
+aDAG = zeros(nNum, nNum); %ajaceny matrix
+nNumTimeSum = cumsum(nNumTime);
+% populate matrix
+aDAGYIndex = 1;
+for i = 1:length(potRSUs)
+    for j = 1:length(potRSUs{i})
+        if(i < length(potRSUs))
+            aDAGXIndex = nNumTimeSum(i);
+            % current vertex is connected to all others in next time
+            for k = 1:length(potRSUs{i+1})
+                aDAGXIndex = aDAGXIndex + 1;
+                
+                if(i ~= length(potRSUs) - 1)
+                    aDAG(aDAGYIndex, aDAGXIndex) = rand * -1;%call to get datarate function
+                else
+                    aDAG(aDAGYIndex, aDAGXIndex) = .00000000000000001; %infinetely small
+                end
+                
+                
+                
+            end
+        end
+        
+        aDAGYIndex = aDAGYIndex + 1;
+    end
+end
 
-cellsz = cellfun(@size,A,'uni',false);
+sDAG = digraph(aDAG, nNames);
+plot(sDAG,'EdgeLabel',sDAG.Edges.Weight)
+%plot(vDAG);
+
+%finding shortest path
+%need potentail RSUs, graph, 
+shortestpath(sDAG, "1_{0}","99_{11}")
+
+
