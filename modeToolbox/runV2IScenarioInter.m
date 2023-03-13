@@ -118,45 +118,48 @@ function [vehicles,pedestrians, outputMap, xyLinks, matchingSim] = ...
     %matchingSim = matchingSim.calculateTileLOS(BS,  BS.rats{2});
     
 %   Get blockages
-    
-%     matchingSim = matchingSim.createXYLinksV2I();
-%     matchingSim.viewSimulation();
-%     matchingSim = matchingSim.createRSUConnectionScheduleGreedy();
-%     %Running the baseline scenario
+    matchingSim = matchingSim.resetStats();
+    %matchingSim = matchingSim.createXYLinksV2I();
+    %matchingSim.viewSimulation();
+    %matchingSim = matchingSim.createRSUConnectionScheduleGreedy();
+    %Running the baseline scenario
 %     for i = 1:sumo.endTime
-%         matchingSim = matchingSim.runGreedyScenario(i);
+%         matchingSim = matchingSim.runGreedyScenario(i, .32);
 %     end
 %     
 %     greedyHandovers = matchingSim.getHandoversByVehicleIndex();
-%     greedyData = matchingSim.getDataTransmittedByVehicle(.32)
+%     greedyData = matchingSim.getDataTransmittedByVehicle(.32);
+%     [greedyPlanFail, greedyLinkBreak] = matchingSim.getStats();
 %     matchingSim = matchingSim.createXYLinksV2I();
-%     matchingSim.viewSimulation();
+%     %matchingSim.viewSimulation();
 %     matchingSim = matchingSim.clearRSUConnections(sumo.endTime);
 %     matchingSim = matchingSim.clearBlockageTimes();
-%     
+%     matchingSim = matchingSim.resetStats();
 %     %Running SMART Scenario
 %     for i = 1:sumo.endTime
-%         matchingSim = matchingSim.runSMARTScenario(i, -30);
+%         matchingSim = matchingSim.runSMARTScenario(i, -30, .32);
 %     end
 %     matchingSim = matchingSim.createXYLinksV2I();
 % %     matchingSim.viewSimulation();
 %     smartHandovers = matchingSim.getHandoversByVehicleIndex();
-%     smartData = matchingSim.getDataTransmittedByVehicle(.32)
+%     smartData = matchingSim.getDataTransmittedByVehicle(.32);
+%     [smartPlanFail, smartLinkBreak] = matchingSim.getStats();
     
     %Running for our method, reset connectedVehicles
     matchingSim = matchingSim.clearRSUConnections(sumo.endTime);
     matchingSim = matchingSim.clearBlockageTimes();
     matchingSim = matchingSim.createRSUConnectionScheduleNearest(matchingSim.buildingLines);
-
+    matchingSim = matchingSim.resetStats();
     for i = 1:sumo.endTime
         
-        matchingSim = matchingSim.connectVehiclesToRSU(i);
+        matchingSim = matchingSim.connectVehiclesToRSU(i,.1984,.32);
         matchingSim = matchingSim.updateVehiclesSchedules(i, 10);
         
     end
     
     goodHandovers = matchingSim.getHandoversByVehicleIndex();
-    goodData = matchingSim.getDataTransmittedByVehicle(.1984)
+    goodData = matchingSim.getDataTransmittedByVehicle();
+    [goodPlanFail, goodLinkBreak] = matchingSim.getStats();
     outputMap.RSUs = matchingSim.rsuList;
     matchingSim = matchingSim.createXYLinksV2I();
     matchingSim.viewSimulation();
