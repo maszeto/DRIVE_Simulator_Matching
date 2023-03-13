@@ -36,6 +36,122 @@ classdef RSU
             end
         end
         
+        function simVeh = getBestScheduleDAG(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            timeIndex = egoVeh.getTimeIndex(timestep);     
+            maxTimestep = length(egoVeh.times);
+            if timeIndex + depth > maxTimestep
+                %return as much as possible 
+                depth = maxTimestep - timeIndex;
+            end
+            
+            
+            potentialRSUs = obj.getPotentialRSUsForDepth(timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            dagPlan = obj.calcBestScheduleDAG(potentialRSUs, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = dagPlan;
+            simVeh = egoVeh;
+        end
+        
+        function potRSUs = getPotentialRSUsForDepth(obj, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            % Calculates the potential rsus at each timestep. If there are no rsus in LOS, an RSU with id -1 is added.
+
+            potRSUs = {};
+
+            for curDepth = 1:depth
+                %Get vehicle position at that time
+                if rand <= .25 && curDepth >= 7
+                    antennaPos = egoVeh.getGuessedAntennaPosAtTime(timestep + curDepth);
+                else
+                    antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
+                end
+                
+                xPos = antennaPos(1);
+                yPos = antennaPos(2);
+                
+                %Get environment info at that time
+                blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, timestep + curDepth); matchingSim.buildingLines];
+                
+                potentialRSUs = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, blockages);
+                
+                if(isempty(potentialRSUs))
+                    potentialRSUs = [-1];
+                end
+                potRSUs{curDepth,1} = potentialRSUs;
+            end
+        end
+        
+        function schedule = calcBestScheduleDAG(obj, potentialRSUs, startTime, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            % potential RSUs is a cell of arrays
+            potRSUs = [{[obj.id]}; potentialRSUs; {[0]}]; % add a start and stop node, 0 is the stop node
+
+            nNum = 0; %vertex num
+            nNumTime = [];
+            nNames = []; %vertex names
+            nIDs = []; %ID vertex corresponds to
+            
+            %Get node names and IDs
+            for i = 1:size(potRSUs)
+                nNum = nNum + length(potRSUs{i});
+                nNumTime = [nNumTime, length(potRSUs{i})];
+                for j = 1:length(potRSUs{i})
+                    nNames = [nNames, num2str(potRSUs{i}(j)) + "_{" + num2str(i-1) + "}"];
+                    nIDs = [nIDs, potRSUs{i}(j)];
+                end
+            end
+            
+            % Get ajacencyasdkhfa matrix to construct graph
+            aDAG = obj.getAMatrix(nNum, nNumTime, nNames, nIDs, potRSUs, startTime, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            
+            %create graph and find shortest path
+            sDAG = digraph(aDAG, nNames);
+            %p = plot(sDAG,'EdgeLabel',sDAG.Edges.Weight);
+            sPath = shortestpath(sDAG, num2str(obj.id) + "_{0}","0_{11}",'Method','acyclic');
+            %highlight(p,sPath,'EdgeColor','g')
+            
+            % Convert path to schedulew 
+            schedule = [];
+            for i = 1:length(sPath)
+                if( i ~= 1 && i ~= length(sPath))
+                    nIndex = find(sPath(i) == nNames);
+                    id = nIDs(nIndex);
+                    schedule = [schedule, id];
+                end
+            end
+            
+        end
+        
+        function aMatrix = getAMatrix(obj, nNum, nNumTime, nNames, nIDs, potRSUs, startTime, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+            aDAG = zeros(nNum, nNum); %ajaceny matrix
+            nNumTimeSum = cumsum(nNumTime);
+            % populate matrix
+            aDAGYIndex = 1;
+            for i = 1:length(potRSUs)
+                for j = 1:length(potRSUs{i})
+                    if(i < length(potRSUs))
+                        aDAGXIndex = nNumTimeSum(i);
+                        % current vertex is connected to all others in next time
+                        for k = 1:length(potRSUs{i+1})
+                            aDAGXIndex = aDAGXIndex + 1;
+
+                            if(i ~= length(potRSUs) - 1) %If we are not on the very last node
+                                aDAG(aDAGYIndex, aDAGXIndex) = -1 * obj.getExpectedData(potRSUs{i}(j),potRSUs{i+1}(k), egoVeh, otherVehicles, startTime + i, matchingSim);%call to get datarate function
+                            else
+                                aDAG(aDAGYIndex, aDAGXIndex) = .00000000000000001; %infinetely small
+                            end         
+                        end
+                    end
+
+                    aDAGYIndex = aDAGYIndex + 1;
+                end
+            end
+            aMatrix = aDAG;
+        end
+        
+        function expectedData = getExpectedData(obj, sRSU, tRSU, egoVeh, otherVehicles, timestep, matchingSim)
+            expectedData = rand; %TODO - replace with actual calc
+        end
+        
+        
         function simVeh = updateSimVehSchedule(obj, timestep, egoVeh, otherVehicles, rsuList, depth)
             if(egoVeh.vehicleType == 1)
                 simVeh = egoVeh;
@@ -153,7 +269,7 @@ classdef RSU
                 yPos = antennaPos(2);
                 
                 %Get environment info at that time
-                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+                blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, timestep + curDepth); obj.buildingLines];
                 
                 potentialRSUs = egoVeh.getRSUsInRangeLOS(xPos, yPos, rsuList, blockages);
                 
@@ -231,7 +347,7 @@ classdef RSU
                 handover = 0;
             end
             
-            blockages = [obj.getBlockagesFromVehicles(otherVehicles, curTime); obj.buildingLines];
+            blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, curTime); obj.buildingLines];
             
             if(hasLOS(xPos,yPos,xPos2,yPos2,blockages))
                 datarate = matchingSim.calcDataRateAtTime(egoVeh.vehicleId, curRSUID, curTime);
@@ -289,7 +405,7 @@ classdef RSU
             
             bestPlan = obj.calcBestPlan(potPlans, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
             
-            %blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+            %blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, timestep + curDepth); obj.buildingLines];
             
         end
         
@@ -308,7 +424,7 @@ classdef RSU
                 badIndex = badConnectionIndices(i);
                 badRSU = blockageOccurences(badIndex);
                 badRSUs = [badRSUs, badRSU];
-                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + badIndex); obj.buildingLines];
+                blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, timestep + badIndex); obj.buildingLines];
                 antennaPos = egoVeh.getAntennaPosAtTime(timestep + badIndex);
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
@@ -346,7 +462,7 @@ classdef RSU
             %find Ideal schedule, plan, track if a blockage occurs  
             curDepth = 1;
             while curDepth <= depth
-                blockages = [obj.getBlockagesFromVehicles(otherVehicles, timestep + curDepth); obj.buildingLines];
+                blockages = [obj.getBlockagesFromVehicles(egoVeh, otherVehicles, timestep + curDepth); obj.buildingLines];
                 
                 if rand <= .25 && curDepth > 8
                     antennaPos = egoVeh.getGuessedAntennaPosAtTime(timestep + curDepth);
@@ -365,10 +481,10 @@ classdef RSU
             end 
         end
         
-        function blockages = getBlockagesFromVehicles(obj,vehicles, timestep)
+        function blockages = getBlockagesFromVehicles(obj,curVeh, vehicles, timestep)
             blockages = [];
             for i = 1:length(vehicles)
-                if (vehicles(i).vehicleType == 1)
+                if (vehicles(i).vehicleType == 1 && vehicles(i).vehicleId ~= curVeh.vehicleId)
                     %Then it is a truck 
                     blockages = [blockages; ...
                                             vehicles(i).getSegments(timestep)];

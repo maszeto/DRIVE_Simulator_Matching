@@ -535,8 +535,7 @@ classdef MatchingSim
         function obj = updateVehiclesSchedules(obj, timeStep, depth)
             %for each RSU, get list of currently connected vehicles
             %check for blockages with other connected vehicles
-            %update that vehicles schedule, assume RSUs are connected, so they
-            %make decision together
+            %update that vehicles schedule
         
             for j = 1:length(obj.rsuList)
                 curRSU1 = obj.rsuList(j);
@@ -555,7 +554,9 @@ classdef MatchingSim
                 for k = 1:length(connectedVehicles)
                     curVeh = obj.vehiclesByIndex(connectedVehicles(k));
                    obj.vehiclesByIndex(connectedVehicles(k)) = ...
-                       curRSU1.updateScheduleGreedy(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj); %breaks OOP I'm pretty sure, oops
+                       curRSU1.getBestScheduleDAG(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj);
+                       %curRSU1.updateScheduleGreedy(timeStep, curVeh, otherVehicles, obj.rsuList, depth, obj); %breaks OOP I'm pretty sure, oops
+                        
                 end
 
             end

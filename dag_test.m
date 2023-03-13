@@ -7,14 +7,14 @@ potRSUs = {
     [1,2,3,4],
     [3,4,6,7],
     [4,5],
-    [5],
+    [-1],
     [5,6,7],
     [6,7],
     [8],
     [8,9],
     [8,9]
     };
-potRSUs = [{[1]}; potRSUs; {[99]}]; % add a start and stop node
+potRSUs = [{[1]}; potRSUs; {[0]}]; % add a start and stop node
 
 nNum = 0; %vertex num
 nNumTime = [];
@@ -46,10 +46,7 @@ for i = 1:length(potRSUs)
                     aDAG(aDAGYIndex, aDAGXIndex) = rand * -1;%call to get datarate function
                 else
                     aDAG(aDAGYIndex, aDAGXIndex) = .00000000000000001; %infinetely small
-                end
-                
-                
-                
+                end         
             end
         end
         
@@ -58,11 +55,23 @@ for i = 1:length(potRSUs)
 end
 
 sDAG = digraph(aDAG, nNames);
-plot(sDAG,'EdgeLabel',sDAG.Edges.Weight)
+p = plot(sDAG,'EdgeLabel',sDAG.Edges.Weight)
 %plot(vDAG);
 
 %finding shortest path
 %need potentail RSUs, graph, 
-shortestpath(sDAG, "1_{0}","99_{11}")
-
+spath = shortestpath(sDAG, "1_{0}","0_{11}",'Method','acyclic');
+highlight(p,spath,'EdgeColor','g')
+% Convert path to schedulew 
+schedule = [];
+for i = 1:length(spath)
+    
+    if( i ~= 1 && i ~= length(spath))
+        nIndex = find(spath(i) == nNames);
+        id = nIDs(nIndex);
+        schedule = [schedule, id];
+    end
+end
+spath
+schedule
 
