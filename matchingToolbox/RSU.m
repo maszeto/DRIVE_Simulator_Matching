@@ -46,9 +46,10 @@ classdef RSU
             
             
             potentialRSUs = obj.getPotentialRSUsForDepth(timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
-            dagPlan = obj.calcBestScheduleDAG(potentialRSUs, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
+            [dagPlan, sDAG] = obj.calcBestScheduleDAG(potentialRSUs, timestep, egoVeh, otherVehicles, rsuList, depth, matchingSim);
             
             egoVeh.RSUPlan(timeIndex+1:timeIndex+depth) = dagPlan;
+            egoVeh.DAGs{timeIndex} = sDAG;
             simVeh = egoVeh;
         end
         
@@ -64,7 +65,6 @@ classdef RSU
                 else
                     antennaPos = egoVeh.getAntennaPosAtTime(timestep + curDepth);
                 end
-                
                 xPos = antennaPos(1);
                 yPos = antennaPos(2);
                 
@@ -80,7 +80,8 @@ classdef RSU
             end
         end
         
-        function schedule = calcBestScheduleDAG(obj, potentialRSUs, startTime, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+        function [schedule,sDAG] = calcBestScheduleDAG(obj, potentialRSUs, startTime, egoVeh, otherVehicles, rsuList, depth, matchingSim)
+
             % potential RSUs is a cell of arrays
             potRSUs = [{[obj.id]}; potentialRSUs; {[0]}]; % add a start and stop node, 0 is the stop node
 
@@ -134,7 +135,8 @@ classdef RSU
                             aDAGXIndex = aDAGXIndex + 1;
 
                             if(i ~= length(potRSUs) - 1) %If we are not on the very last node
-                                aDAG(aDAGYIndex, aDAGXIndex) = -1 * obj.getExpectedData(potRSUs{i}(j),potRSUs{i+1}(k), egoVeh, otherVehicles, startTime + i, matchingSim);%call to get datarate function
+                                aDAG(aDAGYIndex, aDAGXIndex) = ...
+                                    -1 * obj.getExpectedData(potRSUs{i}(j),potRSUs{i+1}(k), egoVeh, startTime + i, matchingSim);%call to get datarate function
                             else
                                 aDAG(aDAGYIndex, aDAGXIndex) = .00000000000000001; %infinetely small
                             end         
@@ -147,8 +149,28 @@ classdef RSU
             aMatrix = aDAG;
         end
         
-        function expectedData = getExpectedData(obj, sRSU, tRSU, egoVeh, otherVehicles, timestep, matchingSim)
-            expectedData = rand; %TODO - replace with actual calc
+        function expectedData = getExpectedData(obj, sRSU, tRSU, egoVeh, timestep, matchingSim)
+            % Estimates the datarate for a given link with the following
+            % overheads
+            plannedOverhead = .1984; % Planned handover overhead in seconds
+  
+            if(sRSU ~= tRSU)
+                handover = 1;
+            else
+                handover = 0;
+            end
+
+            datarate = matchingSim.calcDataRateAtTime(egoVeh.vehicleId, tRSU, timestep);
+            
+            if(datarate == 0)
+                %Can't use zero or dag wont form correctly
+                expectedData = .00000000000000001;
+                return
+            end
+            
+            
+            expectedData = datarate*(1- (handover * plannedOverhead));
+
         end
         
         

@@ -30,6 +30,7 @@ classdef SimVehicle
         datarate            % achieved datarate at each timestep
         rss                 % The RSS at each timestep
         adjustedDataRate    % Calculated after taking to account handover overheads etc. 
+        DAGs                % List of DAGS used to generate schedule at each timeIndex
     end
     
     methods
@@ -54,6 +55,7 @@ classdef SimVehicle
             obj.vehiclesInView = vehiclesStruct.vehNode(vehicleIndex).inView;
             obj.datarate = zeros(1, length(obj.times));
             obj.rss = zeros(1, length(obj.times));
+            obj.DAGs = {};
             
         end
         
@@ -136,13 +138,6 @@ classdef SimVehicle
                 selectedRSUIndex = obj.findNearestRSUInLOS(xPos, yPos, rsuList, blockages);
                 return;
             end
-            
-            %below if statement is no longer true in city scenario
-%             if(obj.vehicleType == 1)
-%                 %Truck, so no chance for blockage
-%                 selectedRSUIndex = obj.getNearestRSUWithGreedy(xPos, yPos, rsuList);
-%                 return;
-%             end
             
             %prioritize current connection 
             prevRSU = obj.RSUs(timeIndex-1);
@@ -296,6 +291,20 @@ classdef SimVehicle
             rsuIDs = obj.RSUs';
             handoverList = [NaN;cumsum(diff(rsuIDs)~=0)];
             handoverNum = handoverList(end);
+        end
+        
+        function obj = viewDAGAtTime(obj, timeStep)
+            timeIndex = obj.getTimeIndex(timeStep);
+            sDAG = obj.DAGs{timeIndex};
+            p = plot(sDAG,'EdgeLabel',sDAG.Edges.Weight);
+            rsuId = obj.RSUs(timeIndex - 1);
+            sPath = shortestpath(sDAG, num2str(rsuId) + "_{0}","0_{11}",'Method','acyclic');
+            highlight(p,sPath,'EdgeColor','g');
+        end
+        
+        function obj = getDetails(obj, timeStep)
+            timeIndex =  obj.getTimeIndex(timeStep);
+            fprintf("ID: %d\ntIndex: %d\nsRSU:%d\nlRSU:%d\npRSU: %d\nDR: %f\n", obj.vehicleId,timeIndex, obj.RSUs(timeIndex), obj.RSUs(timeIndex-1), obj.RSUPlan(timeIndex), (obj.datarate(timeIndex) /1000000000) );
         end
         
         function doesExist = doesVehicleExist(obj, timeStep)
