@@ -600,10 +600,11 @@ classdef MatchingSim
             end
         end
         
-        function obj = updateVehiclesSchedules(obj, timeStep, depth)
+        function obj = updateVehiclesSchedules(obj, timeStep, depth, knowledgeRange)
             %for each RSU, get list of currently connected vehicles
             %check for blockages with other connected vehicles
             %update that vehicles schedule
+            % knowledge range is how much path information you have
         
             for j = 1:length(obj.rsuList)
                 curRSU1 = obj.rsuList(j);
@@ -616,7 +617,7 @@ classdef MatchingSim
 
                 %Get information about other vehicles in the network
                 otherVehicleIndices = [];
-                nearbyRSUs = obj.getNearbyRSUs(curRSU1, 200);
+                nearbyRSUs = obj.getNearbyRSUs(curRSU1, knowledgeRange);
                 for i = 1:length(nearbyRSUs)
                     curRSU = nearbyRSUs(i);
                     otherVehicleIndices = [otherVehicleIndices, curRSU.connectedVehicles{timeStep}];

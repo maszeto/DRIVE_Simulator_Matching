@@ -106,7 +106,7 @@ classdef RSU
             %create graph and find shortest path
             sDAG = digraph(aDAG, nNames);
             %p = plot(sDAG,'EdgeLabel',sDAG.Edges.Weight);
-            sPath = shortestpath(sDAG, num2str(obj.id) + "_{0}","0_{11}",'Method','acyclic');
+            sPath = shortestpath(sDAG, num2str(obj.id) + "_{0}",nNames(end),'Method','acyclic');
             %highlight(p,sPath,'EdgeColor','g')
             
             % Convert path to schedulew 

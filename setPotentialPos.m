@@ -65,6 +65,6 @@ interSection = [
 ];
 
 
-bsPosFromFile = highway7Left24;
+bsPosFromFile = interSection;
 
 save('bsPosFromFile');
